@@ -1,0 +1,29 @@
+{
+	"name": "LayerRenamer",
+	"description": "Find or rename multiple layers at once using RegEx and flags in Sketch",
+	"author": "Leonard Pauli",
+	"homepage": "",
+	"version": "1.0",
+	"identifier": "com.leonardpauli.sketch.layerrenamer",
+	"bundleVersion": 1,
+	"commands": [{
+		"name": "Rename Layers",
+		"identifier": "layerRenamerRename",
+		"handler": "layerRenamerRename",
+		"shortcut": "cmd ctrl r",
+		"script": "layerRenamer.sketchscript",
+		"description": "Rename multiple layers at once"
+	},{
+		"name": "Select Layers",
+		"identifier": "layerRenamerSelect",
+		"handler": "layerRenamerSelect",
+		"shortcut": "cmd shift f",
+		"script": "layerRenamer.sketchscript",
+		"description": "Find layers with RegEx"
+	}],
+	"menu": {
+		"title": "LayerRenamer",
+		"items": ["layerRenamerRename", "layerRenamerSelect"],
+		"isRoot":true
+	}
+}

@@ -1,0 +1,130 @@
+// helpers.cocoascript
+// Sketch Plugins
+// 
+// Created by Leonard Pauli, jan 2017
+// Copyright © Leonard Pauli, jan 2017
+// 
+
+
+// createDynamicClassInstanceWithMethods(methods)
+// methods: {'sayHey:with:': function(phrase, name) {log(phrase+' '+name+'!')}}
+// -> object
+// object.sayHey_with_("Hello", "Cocoa")
+function createDynamicClassInstanceWithMethods(methods) {
+	var uniqueClassName = "CocoaScript_DynamicClass_" + NSUUID.UUID().UUIDString();
+	var delegateClassDesc = MOClassDescription.allocateDescriptionForClassWithName_superclass_(uniqueClassName, NSObject);
+	delegateClassDesc.registerClass();
+
+	var methodNames = Object.keys(methods)
+	methodNames.forEach(function(selectorString) {
+		var dynamicFunction = methods[selectorString]
+		var selector = NSSelectorFromString(selectorString);
+		delegateClassDesc.addInstanceMethodWithSelector_function_(selector, dynamicFunction);
+	})
+
+	var classInstance = NSClassFromString(uniqueClassName).new()
+	return classInstance
+}
+
+
+
+// Alert helper
+// opt: {
+// 	title
+// 	message
+// 	width: 500 or fields: {
+// 		_find: ['value', 'placeholder'], // no label
+// 		replace: 'value and placeholder' // label: 'replace'
+// 	}
+// 	buttons: ['Cancel','OK'] // default ['OK']
+// 	showHelp: function(_alert) {return true;} // default null
+// 		// shows a help (?) button
+// 	-> .selected: {index, title}
+// 	-> .canceled: false
+// 	-> .fields.find.value
+// 	-> .fields.replace.value
+// }
+var showAlert = function(opt) {
+	if (!opt) return
+	if (typeof opt == 'string')
+		opt = {title:opt}
+
+	var self = {}
+	self._v = COSAlertWindow.new();
+
+	self._v.setMessageText(opt.title || '');
+	self._v.setInformativeText(opt.message || '');
+
+	// Fields
+	self.fields = {}
+	if (opt.fields) {
+		var labels = Object.keys(opt.fields)
+
+		var prevField = null, prevViewIndex = -1
+		for (var i=0; i<labels.length; i++) {
+			var label = labels[i]
+			var value = opt.fields[label]
+			var placeholder = value
+
+			if (value instanceof Array) {
+				placeholder = value[1] || ''
+				value = value[0] || ''
+			}
+
+			var hideLabel = label.substr(0,1)=='_'
+			if (!hideLabel) {
+				self._v.addTextLabelWithValue(label); prevViewIndex++;}
+			self._v.addTextFieldWithValue(value); prevViewIndex++;
+
+			var field = self._v.viewAtIndex(prevViewIndex)
+			field.setPlaceholderString(placeholder)
+			field.index = i
+			var fieldLabel = hideLabel ? label.substr(1) : label
+			self.fields[fieldLabel] = field
+
+			if (i==0) {
+				self._v.alert().window().setInitialFirstResponder(field)
+			} else {
+				prevField.setNextKeyView(field)
+			}
+			prevField = field
+		}
+	}
+
+	// Buttons
+	self.buttons = []
+	opt.buttons = !opt.buttons || !opt.buttons.length ? ['OK'] : opt.buttons
+	if (opt.buttons) {
+		var titles = opt.buttons
+		for (var i=0; i<titles.length; i++) {
+			self._v.addButtonWithTitle(titles[i])
+			self.buttons.push({
+				index: i,
+				title: titles[i]
+			})
+		}
+	}
+
+	// Help
+	if (opt.showHelp) {
+		self._v.alert().showsHelp = true
+		var delegate = createDynamicClassInstanceWithMethods({'alertShowHelp:': opt.showHelp})
+		self._v.alert().delegate = delegate
+	}
+
+	// Show
+	if (opt.width && !opt.fields) {
+		self._v.setAccessoryView(NSView.alloc().initWithFrame_(NSMakeRect(0, 0, opt.width, 0)))}
+
+	var selectedButtonIndex = self._v.runModal() - 1000
+	self.selected = self.buttons.find(function (button) {return button.index == selectedButtonIndex})
+	self.canceled = selectedButtonIndex==0
+
+	// Collect field values
+	var fieldLabels = Object.keys(self.fields)
+	fieldLabels.forEach(function (fieldLabel) {
+		var field = self.fields[fieldLabel]
+		field.value = field.stringValue()
+	})
+
+	return self}
