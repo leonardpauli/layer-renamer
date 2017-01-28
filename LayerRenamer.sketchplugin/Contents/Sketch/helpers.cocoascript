@@ -27,6 +27,13 @@ function createDynamicClassInstanceWithMethods(methods) {
 }
 
 
+// Padder helper
+function paddStringToLength(str, len, append, char) {
+	char = char || ' '
+	var txt = ''
+	for (var i=Math.max(0,len-str.length); i>0; i--) txt+=char
+	return append? str+txt: txt+str}
+
 
 // Alert helper
 // opt: {
