@@ -6,7 +6,7 @@
 // 
 
 @import 'helpers.cocoascript'
-
+var scriptPath = coscript.env().scriptURL.path().stringByDeletingLastPathComponent().stringByDeletingLastPathComponent()+'/'
 
 //@import '/Users/leonardpauli/Projects/Experiments/Other/Sketch Plugins/LayerRenamer/LayerRenamer.sketchplugin/Contents/Sketch/helpers.cocoascript'
 var copyPageOutlineToClipboard = function(context) {
@@ -27,7 +27,14 @@ var copyPageOutlineToClipboard = function(context) {
 		title: 'Copy '+(selectionIsPage?'page':'selection')+' as outline',
 		message: 'Protip: Use ⌘-⎇-F to filter first. Some options are available; status (ie. include locked and hidden status), !path, kind, !textContent, pug',
 		fields: {_flags:[defaultFlagsStr,'Optionally list onptions, like: kind status !path']},
-		buttons: ['Copy','Cancel']
+		buttons: ['Copy','Cancel'],
+		beforeShow: function (alert) {
+			var rawAlert = alert._v.alert()
+			
+			var filePath = scriptPath+'Resources/icons/copyPageOutlineToClipboard.png'
+			var image = NSImage.alloc().initWithContentsOfFile(filePath)
+			rawAlert.setIcon(image)
+		}
 	})
 	if (alert.selected.title=='Cancel') return;
 
@@ -121,6 +128,24 @@ var layerRenamerSelect = function(context) {
 		buttons: selectionCount==0? ['Filter All','Cancel'] : ['Search inside', 'Filter selected', 'Cancel'],
 		showHelp: function (alert) {
 			showRegExHelpAlert(true)
+		},
+		beforeShow: function (alert) {
+			var rawAlert = alert._v.alert()
+			
+			var filePath = scriptPath+'Resources/icons/layerRenamerSelect.png'
+			var image = NSImage.alloc().initWithContentsOfFile(filePath)
+			rawAlert.setIcon(image)
+
+			var frame = rawAlert.accessoryView().frame()
+			frame.size.width = 400
+			rawAlert.accessoryView().setFrame(frame)
+
+			Object.keys(alert.fields).forEach(function(key) {
+				var field = alert.fields[key]
+				var frame = field.frame()
+				frame.size.width = 400
+				field.setFrame(frame)
+			})
 		}
 	})
 	if (alert.selected.title=='Cancel') return;
@@ -286,7 +311,13 @@ var layerRenamerRename = function(context) {
 			showRegExHelpAlert(false)
 		},
 		beforeShow: function (alert) {
-			alert._v.alert().window().setInitialFirstResponder(alert.fields.replace)
+			var rawAlert = alert._v.alert()
+			
+			var filePath = scriptPath+'Resources/icons/layerRenamerRename.png'
+			var image = NSImage.alloc().initWithContentsOfFile(filePath)
+			rawAlert.setIcon(image)
+
+			rawAlert.window().setInitialFirstResponder(alert.fields.replace)
 		}
 	})
 	if (alert.selected.title=='Cancel') return;
@@ -424,7 +455,14 @@ function showRegExHelpAlert(isSearch) {
 			+'\n'+'kind (%k/K)'
 			,
 		buttons: ['OK', 'GitHub', 'Regexr.com'],
-		width: 430
+		width: 430,
+		beforeShow: function (alert) {
+			var rawAlert = alert._v.alert()
+			
+			var filePath = scriptPath+'Resources/icons/layerRenamerSelect.png'
+			var image = NSImage.alloc().initWithContentsOfFile(filePath)
+			rawAlert.setIcon(image)
+		}
 	})
 	if (msgAlert.canceled) return;
 	var link = msgAlert.selected.title == 'Regexr.com' ? 'http://regexr.com':

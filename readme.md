@@ -1,4 +1,4 @@
-# LayerRenamer - like a pro
+# LayerRenamer - like a pro &nbsp;&nbsp;<a href="http://bit.ly/SketchRunnerWebsite"><img src="http://sketchrunner.com/img/badge_blue.png" width=120></a>
 
 *- a plugin for [Sketch](https://sketchapp.com/)*
 
@@ -16,7 +16,8 @@
 - Hit `enter`, and profit!
 
 *Protip: if you skip deselecting, if will look through the ones selected*
-http://sketchrunner.com/img/badge_blue.png
+
+<img src="https://github.com/LeonardPauli/LayerRenamer/raw/master/screenshot.png" width="100%">
 
 ---
 
