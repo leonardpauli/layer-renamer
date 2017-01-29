@@ -268,30 +268,35 @@ var layerRenamerRename = function(context) {
 
 	// Get past values
 	var userDefaults = NSUserDefaults.standardUserDefaults()
-	var pastFindStr = userDefaults.objectForKey_("LayerRenamer-find-value") || '(.+)'
-	var pastReplaceStr = userDefaults.objectForKey_("LayerRenamer-replace-value") || '$1'
-	if (pastFindStr=='true') pastFindStr = ''
-	if (pastReplaceStr=='true') pastReplaceStr = ''
-		
+	var defaultFindStr = '(.+)'
+	var defaultReplaceStr = '$1'
+	var pastFindStr = userDefaults.objectForKey_("LayerRenamer-find-value") || defaultFindStr
+	var pastReplaceStr = userDefaults.objectForKey_("LayerRenamer-replace-value") || defaultReplaceStr
+	if (pastFindStr==defaultFindStr) pastFindStr = ''
+	if (pastReplaceStr==defaultReplaceStr) pastReplaceStr = ''
+
 	var alert = showAlert({
 		title: 'Rename '+selectionCount+' layer'+(selectionCount==1 ? '' : 's'),
 		message: 'Using RegExp :)',
 		fields: {
-			_find: [pastFindStr, 'What to search for, eg. (.*) for all'],
+			_find: [pastFindStr, 'What to search for? By default everything: (.+)'],
 			_replace: [pastReplaceStr, 'Try $1, %N, %p.t, and %x/y/w/h']},
 		buttons: ['Replace All','Cancel'],
 		showHelp: function (alert) {
 			showRegExHelpAlert(false)
+		},
+		beforeShow: function (alert) {
+			alert._v.alert().window().setInitialFirstResponder(alert.fields.replace)
 		}
 	})
 	if (alert.selected.title=='Cancel') return;
 
 	var findStr = alert.fields.find.value
-	if (!findStr.length()) findStr = '(.+)'
+	if (!findStr.length()) findStr = defaultFindStr
 	var reg = new RegExp(findStr, 'i')
 	var replaceStr = alert.fields.replace.value
 	if (!replaceStr.length()) replaceStr = ''
-	dLog('b'+findStr+':'+replaceStr)
+	
 	var nrOfReplaced = 0
 	for (var i=0; i<selectionCount; i++) {
 		var layer = selection[i]

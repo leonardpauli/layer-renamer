@@ -52,6 +52,7 @@ function dLog(str) {
 // 	buttons: ['Cancel','OK'] // default ['OK']
 // 	showHelp: function(_alert) {return true;} // default null
 // 		// shows a help (?) button
+// 	beforeShow: function(alert) {}
 // 	-> .selected: {index, title}
 // 	-> .canceled: false
 // 	-> .fields.find.value
@@ -129,6 +130,7 @@ var showAlert = function(opt) {
 	if (opt.width && !opt.fields) {
 		self._v.setAccessoryView(NSView.alloc().initWithFrame_(NSMakeRect(0, 0, opt.width, 0)))}
 
+	if (opt.beforeShow) opt.beforeShow(self)
 	var selectedButtonIndex = self._v.runModal() - 1000
 	self.selected = self.buttons.find(function (button) {return button.index == selectedButtonIndex})
 	self.canceled = selectedButtonIndex==0

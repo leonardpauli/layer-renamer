@@ -1,20 +1,20 @@
-# LayerRenamer - like a pro
+# LayerRenamer - Pro style
 *- a plugin for [Sketch](https://sketchapp.com/)*
 
 #### Rename multiple layers at once using RegEx and flags
 - Select your layer(s)
-- Hit `⌘-ctrl-R`
+- Hit `⌘-⎇-R`
 - Enter your regex, or just tab if you want it all
 - Enter your replacement pattern
 - Hit `enter`, and profit!
 
 #### Or, wanna select all layers whose name matches regex?
 - Deselect all 
-- Hit `⌘-shift-F`
+- Hit `⌘-⎇-F`
 - Enter your regex
 - Hit `enter`, and profit!
 
-*Protip: if you skip deselecting, if will look through the ones selected
+*Protip: if you skip deselecting, if will look through the ones selected*
 
 ---
 
@@ -50,7 +50,7 @@ Leaving the expression field empty defaults to `!path && !artboard`
 ⚠️ Seems like you can't select both layers and their containing group simultaneously. Because of this, if the group is matched (or combined shape container for that matter), it won't match anything inside of it. Add expression !group (or !shape) to search its content instead.
  
 ### Say thanks
-If you enjoy this plugin, please consider [buying me some oatgurt](https://www.paypal.me/leonardpauli/5). You can also drop me a line or [follow  me on Twitter](http://twitter.com/leonardpauli).
+If you enjoy this plugin, please consider [buying me some oatgurt](https://www.paypal.me/leonardpauli/5USD). You can also drop me a line or [follow  me on Twitter](http://twitter.com/leonardpauli).
 
 ### About
 Created by Leonard Pauli, in january 2017, after getting inspired by the [RenameIt](https://github.com/rodi01/RenameIt) plugin. Feel free to fork or send pull requests :)
