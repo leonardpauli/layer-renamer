@@ -1,20 +1,22 @@
 # LayerRenamer - like a pro
+
 *- a plugin for [Sketch](https://sketchapp.com/)*
 
-#### Rename multiple layers at once using RegEx and flags
+#### ![](https://github.com/LeonardPauli/LayerRenamer/raw/master/LayerRenamer.sketchplugin/Contents/Resources/icons/layerRenamerRename.png) Rename multiple layers at once using RegEx and flags
 - Select your layer(s)
 - Hit `⌘-⎇-R`
 - Enter your regex, or just tab if you want it all
 - Enter your replacement pattern
 - Hit `enter`, and profit!
 
-#### Or, wanna select all layers whose name matches regex?
+#### ![](https://github.com/LeonardPauli/LayerRenamer/raw/master/LayerRenamer.sketchplugin/Contents/Resources/icons/layerRenamerSelect.png) Or, wanna select all layers whose name matches regex?
 - Deselect all 
 - Hit `⌘-⎇-F`
 - Enter your regex
 - Hit `enter`, and profit!
 
 *Protip: if you skip deselecting, if will look through the ones selected*
+http://sketchrunner.com/img/badge_blue.png
 
 ---
 

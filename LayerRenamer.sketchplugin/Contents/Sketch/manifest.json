@@ -12,21 +12,24 @@
 		"handler": "layerRenamerRename",
 		"shortcut": "cmd alt r",
 		"script": "layerRenamer.sketchscript",
-		"description": "Rename multiple layers at once"
+		"description": "Rename multiple layers at once",
+		"icon": "icons/layerRenamerRename.png"
 	},{
 		"name": "Select Layers",
 		"identifier": "layerRenamerSelect",
 		"handler": "layerRenamerSelect",
 		"shortcut": "cmd alt f",
 		"script": "layerRenamer.sketchscript",
-		"description": "Find layers with RegEx"
+		"description": "Find layers with RegEx",
+		"icon": "icons/layerRenamerSelect.png"
 	},{
 		"name": "Copy page outline",
 		"identifier": "copyPageOutlineToClipboard",
 		"handler": "copyPageOutlineToClipboard",
 		"shortcut": "cmd alt shift ctrl c",
 		"script": "layerRenamer.sketchscript",
-		"description": "copyPageOutlineToClipboard"
+		"description": "copyPageOutlineToClipboard",
+		"icon": "icons/copyPageOutlineToClipboard.png"
 	}],
 	"menu": {
 		"title": "LayerRenamer",
