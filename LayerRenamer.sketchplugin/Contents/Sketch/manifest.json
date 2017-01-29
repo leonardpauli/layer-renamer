@@ -10,14 +10,14 @@
 		"name": "Rename Layers",
 		"identifier": "layerRenamerRename",
 		"handler": "layerRenamerRename",
-		"shortcut": "cmd ctrl r",
+		"shortcut": "cmd alt r",
 		"script": "layerRenamer.sketchscript",
 		"description": "Rename multiple layers at once"
 	},{
 		"name": "Select Layers",
 		"identifier": "layerRenamerSelect",
 		"handler": "layerRenamerSelect",
-		"shortcut": "cmd shift f",
+		"shortcut": "cmd alt f",
 		"script": "layerRenamer.sketchscript",
 		"description": "Find layers with RegEx"
 	},{

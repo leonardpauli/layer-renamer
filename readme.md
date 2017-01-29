@@ -47,7 +47,7 @@ Ordered numbers? Dimensions? Find 'n Rename got you covered!
 Leave the search/find field empty to match everything
 Leaving the expression field empty defaults to `!path && !artboard`
 
-⚠️ Seems like you can't select both layers and their containing group simultaneously. Because of this, if the group is matched, it won't match anything inside of it. Add expression !group to search its content instead. Also, if it doesn't rename regex-selected layers, try adding !path in the search expression. Seems like sometimes hidden paths show up and messes up things.
+⚠️ Seems like you can't select both layers and their containing group simultaneously. Because of this, if the group is matched (or combined shape container for that matter), it won't match anything inside of it. Add expression !group (or !shape) to search its content instead.
  
 ### Say thanks
 If you enjoy this plugin, please consider [buying me some oatgurt](https://www.paypal.me/leonardpauli/5). You can also drop me a line or [follow  me on Twitter](http://twitter.com/leonardpauli).
