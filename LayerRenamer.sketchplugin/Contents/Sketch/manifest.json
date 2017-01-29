@@ -24,6 +24,7 @@
 		"name": "Copy page outline",
 		"identifier": "copyPageOutlineToClipboard",
 		"handler": "copyPageOutlineToClipboard",
+		"shortcut": "cmd alt shift ctrl c",
 		"script": "layerRenamer.sketchscript",
 		"description": "copyPageOutlineToClipboard"
 	}],

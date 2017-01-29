@@ -7,29 +7,80 @@
 
 @import 'helpers.cocoascript'
 
+
 //@import '/Users/leonardpauli/Projects/Experiments/Other/Sketch Plugins/LayerRenamer/LayerRenamer.sketchplugin/Contents/Sketch/helpers.cocoascript'
 var copyPageOutlineToClipboard = function(context) {
-	var doc = context.document;
-	var page = doc.currentPage();
+	var doc = context.document
+	var page = doc.currentPage()
+	var selection = context.selection
+	var selectionCount = selection.count()
+	var selectionIsPage = selectionCount==0
+	if (selectionIsPage) {
+		selection = [page]
+		selectionCount = 1}
+
+	var defaultFlagsStr = 'pug'
+	var userDefaults = NSUserDefaults.standardUserDefaults()
+	var pastFlagsStr = userDefaults.objectForKey_("LayerRenamer-outline-flags-value") || defaultFlagsStr
+
+	var alert = showAlert({
+		title: 'Copy '+(selectionIsPage?'page':'selection')+' as outline',
+		message: 'Protip: Use ⌘-⎇-F to filter first. Some options are available; status (ie. include locked and hidden status), !path, kind, !textContent, pug',
+		fields: {_flags:[defaultFlagsStr,'Optionally list onptions, like: kind status !path']},
+		buttons: ['Copy','Cancel']
+	})
+	if (alert.selected.title=='Cancel') return;
+
+	var flagsStr = alert.fields.flags.value
+	if (!flagsStr.length()) flagsStr = defaultFlagsStr
+	var flagKeys = flagsStr.split(' ')
+	var flags = {
+		path: true,
+		textContent: true,
+		status: false,
+		kind: false,
+		pug: false
+	}
+	flagKeys.forEach(function(key) {
+		var value = key.split('=')
+		key = value[0]
+		value = value[1]
+		if (key[0]=='!') {key=key.substr(1);value=false}
+		else if (value===undefined) value = true
+		flags[key] = value
+	})
+
 	var txt = ''
 	var prefix = ''
 	function addLayerSingleRow(layer, prefix) {
-		txt += prefix+layer.name()
-			+': '+getLayerKind(layer)
-			+(layer.isSelected()?' ✓':'')
-			+(layer.isLocked()?' 🔒':'')
-			+(!layer.isVisible()?' ∅':'')
-			+'\n'}
+		var name = layer.name()
+		var kind = getLayerKind(layer)
+		if (flags.pug && kind=='Path') return;
+		if (flags.pug && name=='bg' && kind=='Shape') return;
+		txt += prefix
+		if (flags.pug && name.substr(0,1).match(/[a-z]/))
+			txt += '.'
+		txt += name
+		if (flags.kind) txt += ': '+kind
+			//+(layer.isSelected()?' ✓':'')
+		if (flags.status) {
+			txt += (layer.isLocked()?' 🔒':'')
+			txt += (!layer.isVisible()?' ∅':'')}
+		if (flags.textContent && kind=='Text') {
+			var strVal = layer.stringValue()+''
+			txt+= (strVal.length>80)? '.\n'+prefix+'\t'+strVal: ' '
+			txt+=strVal}
+		txt += '\n'}
 
-	addLayerSingleRow(page, prefix); prefix += '\t'
 	var loopLayers = function(layers, prefix) {
-		layers.forEach(function(layer) {
+		layers.slice().reverse().forEach(function(layer) {
 			addLayerSingleRow(layer, prefix)
-			if (layer.layers)
-				loopLayers(layer.layers(), prefix+'\t')
+
+			if (!flags.path && getLayerKind(layer)=='Shape') return false;
+			else if (layer.layers) loopLayers(layer.layers(), prefix+'\t')
 		})
 	}
-	page.layers().forEach(function(layer) {
+	selection.forEach(function(layer) {
 		addLayerSingleRow(layer, prefix)	
 		loopLayers(layer.layers(), prefix+'\t')
 	})
@@ -37,11 +88,14 @@ var copyPageOutlineToClipboard = function(context) {
 	NSPasteboard.generalPasteboard().clearContents()
 	NSPasteboard.generalPasteboard().setString_forType_(txt, NSStringPboardType)
 	doc.showMessage("Page outline copied to clipboard")
+
+	// Save for later
+	userDefaults.setObject_forKey_(flagsStr, "LayerRenamer-outline-flags-value")
 }
 
 
 var layerRenamerSelect = function(context) {
-	log('👉'+paddStringToLength('  Layer name', 24, true)
+	dLog('👉'+paddStringToLength('  Layer name', 24, true)
 			 +paddStringToLength('Matches', 40, true)
 			 +paddStringToLength('Expression', 40, true))
 	var doc = context.document
@@ -56,7 +110,7 @@ var layerRenamerSelect = function(context) {
 	var pastSearchStr = userDefaults.objectForKey_("LayerRenamer-search-value") || defaultSearchStr
 	var pastExpressionStr = userDefaults.objectForKey_("LayerRenamer-expression-value") || defaultExpressionStr
 	if (pastSearchStr==defaultSearchStr) pastSearchStr = ''
-	if (pastExpressionStr==defaultExpressionStr) pastExpressionStr = ''
+	//if (pastExpressionStr==defaultExpressionStr) pastExpressionStr = ''
 
 	var alert = showAlert({
 		title: 'Search through and filter '+(selectionCount || 'all')+' layer'+(selectionCount==1 ? '' : 's'),
@@ -116,9 +170,6 @@ var layerRenamerSelect = function(context) {
 		// Populate expression flags
 		var str = replaceLayerExpressionFlags(expressionStr, layer, true, selectionCount, currIterationIdx)
 		currIterationIdx++
-		log(paddStringToLength(''+name, 25, true)
-			 +paddStringToLength((!matches?'null':'['+matches.join(', ')+']'), 40, true)
-			 +paddStringToLength(str, 40, true))
 		
 		// Populate capture groups
 		matches = matches.map(function(match, index) {
@@ -140,10 +191,13 @@ var layerRenamerSelect = function(context) {
 		// Try evaluate expression and (de)select current layer
 		try {
 			var res = eval(vars+str)
-			if (res) log('✅')
 			var couldSelect = (shouldFilterSelected && depth==0) || (shouldFilterInside && depth>0)
 			var shouldSelect =  couldSelect && !!res
-			if (!shouldSelect) log('😡' + layerKindName)
+
+			dLog((shouldSelect? '✅': '😡')+paddStringToLength('  '+name, 24, true)
+			 +paddStringToLength((!matches?'null':'['+matches.join(', ')+']'), 40, true)
+			 +paddStringToLength(str, 40, true))
+
 			//layer.setIsSelected(shouldSelect)
 			if (shouldSelect) selectLayer(layer)
 			if (shouldSelect) addLayerKindToFreqs(layerKindName)
@@ -165,7 +219,7 @@ var layerRenamerSelect = function(context) {
 					+'\nError: "'+e+'"',
 				buttons: ['Abort', 'Continue']
 			})
-			if (alert.canceled)
+			if (alert.selected.title=='Abort')
 				return true
 			//layer.setIsSelected(false)
 			return false;
@@ -179,8 +233,6 @@ var layerRenamerSelect = function(context) {
 	// Message
 	var selectedTypes = Object.keys(selectedTypesFreqs)
 	var newSelectionCount = selectedTypes.reduce(function(p,v) {return p+selectedTypesFreqs[v]}, 0)
-	log('selectionCount:'+selectionCount)
-	log('newSelectionCount:'+newSelectionCount)
 	var msg = ''
 	if (newSelectionCount==0) msg += 'No layers where selected'
 	else {
@@ -239,7 +291,7 @@ var layerRenamerRename = function(context) {
 	var reg = new RegExp(findStr, 'i')
 	var replaceStr = alert.fields.replace.value
 	if (!replaceStr.length()) replaceStr = ''
-	log('b'+findStr+':'+replaceStr)
+	dLog('b'+findStr+':'+replaceStr)
 	var nrOfReplaced = 0
 	for (var i=0; i<selectionCount; i++) {
 		var layer = selection[i]
@@ -250,7 +302,7 @@ var layerRenamerRename = function(context) {
 		var name = nameOld.replace(reg, str)
 		if (nameOld!=name) nrOfReplaced++
 
-		log(paddStringToLength(''+nameOld, 25, true)
+		dLog(paddStringToLength(''+nameOld, 25, true)
 			 +paddStringToLength(str, 40, true)
 			 +paddStringToLength(name, 40, true))
 

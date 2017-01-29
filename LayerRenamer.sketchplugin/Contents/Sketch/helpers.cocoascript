@@ -4,7 +4,7 @@
 // Created by Leonard Pauli, jan 2017
 // Copyright © Leonard Pauli, jan 2017
 // 
-
+var LOG_DEBUG = false
 
 // createDynamicClassInstanceWithMethods(methods)
 // methods: {'sayHey:with:': function(phrase, name) {log(phrase+' '+name+'!')}}
@@ -33,6 +33,12 @@ function paddStringToLength(str, len, append, char) {
 	var txt = ''
 	for (var i=Math.max(0,len-str.length); i>0; i--) txt+=char
 	return append? str+txt: txt+str}
+
+
+// Log helper
+function dLog(str) {
+	if (!LOG_DEBUG) return;
+	log(str)}
 
 
 // Alert helper
