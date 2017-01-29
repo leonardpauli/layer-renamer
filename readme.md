@@ -1,4 +1,4 @@
-# LayerRenamer - Pro style
+# LayerRenamer - like a pro
 *- a plugin for [Sketch](https://sketchapp.com/)*
 
 #### Rename multiple layers at once using RegEx and flags
