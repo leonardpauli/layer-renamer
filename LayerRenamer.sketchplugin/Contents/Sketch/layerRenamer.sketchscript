@@ -471,7 +471,7 @@ function showRegExHelpAlert(isSearch) {
 		+'\nExpressions are written in cool JavaScript. Compare capture groups and use variables like:'
 	var variablesMessage = !isSearch ?
 		'Variables are also supported, in the replace box (see GitHub for more):':
-		'$1 == %p.p.t and (artboard or group or shape or slice or bitmap or text or path)'
+		'$1 == %p.p.t and (artboard or group or shape or slice or bitmap or text or path)\n'
 
 	var msgAlert = showAlert({
 		title: title,
@@ -489,14 +489,16 @@ function showRegExHelpAlert(isSearch) {
 			+'\n'+	'ab|cd'							+'\t\t\t'+	' match ab or cd'
 			+'\n'
 			+'\n'+ middleMessage
-			+'\n'
 			+'\n'+ variablesMessage
-			+'\n'+'index  (%N)'+' \tin parent  (%i/I)'+'\t\tdimensions (%w/h/x/y)'+' title (%t)'
+			+'\n'+'index  (%N)'+' \tin parent  (%i/I)'+'\t\tdimensions (%w/h/x/y)'+' title (%t)' +'   kind (%k/K)'
 			+'\n'+'from 0 (%n)'+' \treversed  (%-N/n)'+ ' \tparent properties  (%p.t/w) '+' % (%%)'
-			+'\n'+'kind (%k/K)'
+			+'\n'
+			+'\n'+'Navigate the layer tree using Relative find paths:'
+				   +' Write ":"" in the end of a search expression, followed by any of the following, stacked how many times you desire, to navigate the layer tree:'
+			+'\n'+' > all children, < parent, 2 third layer in parent (counting starts at 0), 2n every other layer, +1 layer after, -4 layer four layers before, t.ex bg:-1>3>2n+1'
 			,
 		buttons: ['OK', 'GitHub', 'Regexr.com'],
-		width: 430,
+		width: 520,
 		icon:scriptPath+'Resources/icons/layerRenamerSelect.png'
 	})
 	if (msgAlert.canceled) return;
