@@ -147,7 +147,8 @@ var layerRenamerSelect = function(context) {
 	var expressionStr = alert.fields.expression.value
 	if (!expressionStr.length()) expressionStr = defaultExpressionStr
 	userDefaults.setObject_forKey_(expressionStr, "LayerRenamer-expression-value")
-	
+	expressionStr = expressionStr.replace(/or/ig, '||').replace(/and/ig, '&&')
+
 	var shouldFilterAll = alert.selected.title == 'Filter All'
 	var shouldFilterSelected = alert.selected.title == 'Filter selected'
 	var shouldFilterInside = alert.selected.title == 'Search inside'
@@ -364,8 +365,11 @@ var layerRenamerRename = function(context) {
 	var findStr = alert.fields.find.value
 	if (!findStr.length()) findStr = defaultFindStr
 	var reg = new RegExp(findStr, 'i')
+	userDefaults.setObject_forKey_(findStr, "LayerRenamer-find-value")
+	
 	var replaceStr = alert.fields.replace.value
 	if (!replaceStr.length()) replaceStr = ''
+	userDefaults.setObject_forKey_(replaceStr, "LayerRenamer-replace-value")
 	
 	var nrOfReplaced = 0
 	for (var i=0; i<selectionCount; i++) {
@@ -388,10 +392,6 @@ var layerRenamerRename = function(context) {
 	else doc.showMessage('Renamed '
 		+(selectionCount==nrOfReplaced?'all ':nrOfReplaced+' of ')
 		+selectionCount+' layer' + (selectionCount==1?'':'s'))
-
-	// Save for later
-	userDefaults.setObject_forKey_(findStr, "LayerRenamer-find-value")
-	userDefaults.setObject_forKey_(replaceStr, "LayerRenamer-replace-value")
 }
 
 function replaceLayerExpressionFlags(expression, layer, quoteStrings, selectionCount, i) {
@@ -464,13 +464,14 @@ function showRegExHelpAlert(isSearch) {
 		+'$1 would reference to first capture group, that is, the number ("\\d+"), etc.'
 		:
 		'Use parenthesis to create capture groups; eg. filtering items like "item 57 flower"'
-		+'using the regex  "item (\\d+)", and expression "$1 < 20 && (shape || group)"'
-		+'would match "item 15", if it\'s also a shape or group layer, but not "item 22"'
-
-		+'. Expressions are written in JavaScript. Compare capture groups and use variables like:'
+		+'using the regex  "item (\\d+)", and expression "$1 < 20 and (shape or group)"'
+		+'would match "item 15", if it\'s also a shape or group layer, but not "item 22".'
+		+' Be fast! hit ⌘↩︎ to access the second button.'
+		+'\n'
+		+'\nExpressions are written in cool JavaScript. Compare capture groups and use variables like:'
 	var variablesMessage = !isSearch ?
 		'Variables are also supported, in the replace box (see GitHub for more):':
-		'$1 == %p.p.t && (artboard || group || shape || slice || bitmap || text || path)'
+		'$1 == %p.p.t and (artboard or group or shape or slice or bitmap or text or path)'
 
 	var msgAlert = showAlert({
 		title: title,
