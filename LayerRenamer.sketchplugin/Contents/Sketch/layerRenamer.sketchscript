@@ -129,32 +129,24 @@ var layerRenamerSelect = function(context) {
 		showHelp: function (alert) {
 			showRegExHelpAlert(true)
 		},
-		beforeShow: function (alert) {
-			var rawAlert = alert._v.alert()
-			
-			var filePath = scriptPath+'Resources/icons/layerRenamerSelect.png'
-			var image = NSImage.alloc().initWithContentsOfFile(filePath)
-			rawAlert.setIcon(image)
-
-			var frame = rawAlert.accessoryView().frame()
-			frame.size.width = 400
-			rawAlert.accessoryView().setFrame(frame)
-
-			Object.keys(alert.fields).forEach(function(key) {
-				var field = alert.fields[key]
-				var frame = field.frame()
-				frame.size.width = 400
-				field.setFrame(frame)
-			})
-		}
+		width: 400,
+		icon: scriptPath+'Resources/icons/layerRenamerSelect.png'
 	})
 	if (alert.selected.title=='Cancel') return;
 
 	var searchStr = alert.fields.search.value
 	if (!searchStr.length()) searchStr = defaultSearchStr
+	userDefaults.setObject_forKey_(searchStr, "LayerRenamer-search-value")
+
+	// Take out relative selection path string
+	var relativePathMatch = searchStr.match(/(?:[^\\]|^):([<>n\d+-]+)$/)
+	var relativePath = relativePathMatch ? relativePathMatch[1] : null
+	if (relativePath) searchStr = searchStr.substr(0,searchStr.length-relativePath.length-1)
+
 	var reg = new RegExp(searchStr, 'i')
 	var expressionStr = alert.fields.expression.value
 	if (!expressionStr.length()) expressionStr = defaultExpressionStr
+	userDefaults.setObject_forKey_(expressionStr, "LayerRenamer-expression-value")
 	
 	var shouldFilterAll = alert.selected.title == 'Filter All'
 	var shouldFilterSelected = alert.selected.title == 'Filter selected'
@@ -165,18 +157,7 @@ var layerRenamerSelect = function(context) {
 		selectionCount = selection.count()
 		shouldFilterSelected = shouldFilterInside = true}
 
-	page.deselectAllLayers()
-	var firstSelected = false
-	function selectLayer(layer) {
-		layer.select_byExpandingSelection_(true, firstSelected)
-		firstSelected = true
-	}
-
-	var selectedTypesFreqs = {}
-	var addLayerKindToFreqs = function(layerKindName) {
-		if (!selectedTypesFreqs[layerKindName]) selectedTypesFreqs[layerKindName] = 0
-		selectedTypesFreqs[layerKindName]++}
-
+	var layersToBeSelected = []
 	var currIterationIdx = 0
 	var handleLayer = function(layer, depth) {
 		function digDeeper() {
@@ -207,9 +188,9 @@ var layerRenamerSelect = function(context) {
 
 		// Setup expression variables
 		var layerKindName = getLayerKind(layer)
-		var vars = 'Shape/Group/Artboard/Page/Slice/Bitmap/Text/Symbol/SymbolMaster/Path'.split('/').map(function(name) {
-			return 'var '+name.toLowerCase()+'='+(layerKindName==name?'true':'false')+';'
-		}).join('')
+		var vars = 'var '+'Shape/Group/Artboard/Page/Slice/Bitmap/Text/Symbol/SymbolMaster/Path'.split('/').map(function(name) {
+			return name.toLowerCase()+'='+(layerKindName==name?'true':'false')
+		}).join(', ')+';'
 		vars += 'var '+'hidden'+'='+(!layer.isVisible()?'true':'false')+';'
 		vars += 'var '+'locked'+'='+(layer.isLocked()?'true':'false')+';'
 
@@ -224,8 +205,7 @@ var layerRenamerSelect = function(context) {
 			 +paddStringToLength(str, 40, true))
 
 			//layer.setIsSelected(shouldSelect)
-			if (shouldSelect) selectLayer(layer)
-			if (shouldSelect) addLayerKindToFreqs(layerKindName)
+			if (shouldSelect) layersToBeSelected.push(layer)
 
 			// Shape is really a group, even if it doesn't
 			// look that way if it only contains one
@@ -255,6 +235,73 @@ var layerRenamerSelect = function(context) {
 	selection.some(function(layer){return handleLayer(layer, 0)})
 
 
+
+	var findLayersUsingRelativePath = function (baseLayers, path) {
+		var layers = []
+		var direction = path.match(/^:?(([<>])|((\d+n)?(([+-])?\d+)?))/)
+		if (!direction) throw 'Path "'+path+'" isn\'t valid'
+		var restPath = path.substr(direction[0].length)
+
+		if (direction[2]=='<') {
+			baseLayers.forEach(function(layer) {
+				if (layer.parentGroup) {
+					var parent = layer.parentGroup()
+					if (layers.indexOf(parent)<0)
+						layers.push(parent)
+				}
+			})
+		} else if (direction[2]=='>') {
+			baseLayers.forEach(function(layer) {
+				if (layer.layers) layer.layers()
+					.forEach(function(l) {layers.push(l)})
+			})
+		} else if (!direction[3] || !direction[3].length) { // containing group
+			throw 'Path "'+path+'" isn\'t valid.'
+		} else {
+			var usingModulus = !!direction[4]
+			var k = usingModulus? parseInt(direction[4]) : 1
+			var m = direction[5]? parseInt(direction[5]) : 0
+			var doRelative = direction[6]
+
+			baseLayers.forEach(function(layer, idx) {
+				var index = baseLayers.length-idx-1
+				if (usingModulus) {
+					if ((index+m)%k == 0)
+						layers.push(layer)
+				} else {
+					if (!layer.parentGroup) return;
+					var parent = layer.parentGroup()
+					var siblings = parent.layers()
+
+					var targetIdx = !doRelative? siblings.length-1-m : siblings.indexOf(layer) - m
+					if (targetIdx<0) targetIdx += siblings.length
+					if (targetIdx>=0 && targetIdx<siblings.length)
+						layers.push(siblings[targetIdx])
+				}
+			})
+		}
+
+		return !restPath.length? layers:
+			findLayersUsingRelativePath(layers, restPath)
+	}
+
+
+	var selectedTypesFreqs = {}
+	var addLayerKindToFreqs = function(layerKindName) {
+		if (!selectedTypesFreqs[layerKindName]) selectedTypesFreqs[layerKindName] = 0
+		selectedTypesFreqs[layerKindName]++}
+
+	layersToBeSelected = !relativePath? layersToBeSelected:
+		findLayersUsingRelativePath(layersToBeSelected, relativePath)
+
+	page.deselectAllLayers()
+	layersToBeSelected.forEach(function(layer) {
+		if (layer.isSelected()) return;
+		addLayerKindToFreqs(getLayerKind(layer))
+		layer.select_byExpandingSelection_(true, true)
+	})
+
+
 	// Message
 	var selectedTypes = Object.keys(selectedTypesFreqs)
 	var newSelectionCount = selectedTypes.reduce(function(p,v) {return p+selectedTypesFreqs[v]}, 0)
@@ -276,10 +323,6 @@ var layerRenamerSelect = function(context) {
 	}
 		
 	doc.showMessage(msg)
-	
-	// Save for later
-	userDefaults.setObject_forKey_(searchStr, "LayerRenamer-search-value")
-	userDefaults.setObject_forKey_(expressionStr, "LayerRenamer-expression-value")
 }
 
 var layerRenamerRename = function(context) {
@@ -310,14 +353,10 @@ var layerRenamerRename = function(context) {
 		showHelp: function (alert) {
 			showRegExHelpAlert(false)
 		},
+		width: 400,
+		icon: scriptPath+'Resources/icons/layerRenamerRename.png',
 		beforeShow: function (alert) {
-			var rawAlert = alert._v.alert()
-			
-			var filePath = scriptPath+'Resources/icons/layerRenamerRename.png'
-			var image = NSImage.alloc().initWithContentsOfFile(filePath)
-			rawAlert.setIcon(image)
-
-			rawAlert.window().setInitialFirstResponder(alert.fields.replace)
+			alert.rawAlert.window().setInitialFirstResponder(alert.fields.replace)
 		}
 	})
 	if (alert.selected.title=='Cancel') return;
@@ -387,9 +426,10 @@ function replaceLayerExpressionFlags(expression, layer, quoteStrings, selectionC
 			var parentLyr = lyr.parentGroup()
 			if (!parentLyr) return quoteStrings?null:'?'
 			
+			var siblings = parentLyr.layers()
 			var indexInParent = parentLyr.indexOfLayer_(lyr)
-			if (flag.substr(0,1)=='i') return zeroPad(flag, indexInParent)
-			if (flag.substr(0,1)=='I') return zeroPad(flag, indexInParent+1)
+			if (flag.substr(0,1)=='i') return zeroPad(flag, !useReverse ? siblings.length-indexInParent-1 : indexInParent)
+			if (flag.substr(0,1)=='I') return zeroPad(flag, !useReverse ? siblings.length-indexInParent   : indexInParent+1)
 
 			return all
 		})
@@ -456,13 +496,7 @@ function showRegExHelpAlert(isSearch) {
 			,
 		buttons: ['OK', 'GitHub', 'Regexr.com'],
 		width: 430,
-		beforeShow: function (alert) {
-			var rawAlert = alert._v.alert()
-			
-			var filePath = scriptPath+'Resources/icons/layerRenamerSelect.png'
-			var image = NSImage.alloc().initWithContentsOfFile(filePath)
-			rawAlert.setIcon(image)
-		}
+		icon:scriptPath+'Resources/icons/layerRenamerSelect.png'
 	})
 	if (msgAlert.canceled) return;
 	var link = msgAlert.selected.title == 'Regexr.com' ? 'http://regexr.com':
