@@ -27,6 +27,7 @@ Regular Expressions are very powerful. To learn more and try some more, visit [r
 - Select all `.+`
 - Use capture groups `item (\d+) (\w+)` will match `item 57 flower` with `$1` as `57` and `$2` as `flower`
 - In rename, use the capture groups; `$1-icon $2` would give `flower-icon 57`
+- Adding a prefix or suffix is very simple, check out [this question](https://github.com/LeonardPauli/LayerRenamer/issues/1) for some demos
 
 #### Flags
 Ordered numbers? Dimensions? Find 'n Rename got you covered!
