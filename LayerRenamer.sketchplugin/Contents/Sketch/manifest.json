@@ -3,7 +3,7 @@
 	"description": "Find or rename multiple layers at once using RegEx and flags in Sketch (v.45)",
 	"author": "Leonard Pauli",
 	"homepage": "https://github.com/LeonardPauli/LayerRenamer",
-	"appcast": "https://github.com/LeonardPauli/LayerRenamer/blob/master/appcast.xml",
+	"appcast": "https://github.com/LeonardPauli/LayerRenamer/blob/master/appcast.xml?raw=true",
 	"version": "1.1",
 	"identifier": "com.leonardpauli.sketch.layerrenamer",
 	"bundleVersion": 1,
