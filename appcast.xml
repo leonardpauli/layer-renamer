@@ -4,5 +4,8 @@
     <item>
       <enclosure url="https://github.com/LeonardPauli/LayerRenamer/archive/master.zip?raw=true" sparkle:version="1.1"/>
     </item>
+    <item>
+      <enclosure url="https://github.com/LeonardPauli/LayerRenamer/archive/master.zip?raw=true" sparkle:version="1.2"/>
+    </item>
   </channel>
 </rss>

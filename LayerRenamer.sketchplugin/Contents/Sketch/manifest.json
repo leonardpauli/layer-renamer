@@ -4,7 +4,7 @@
 	"author": "Leonard Pauli",
 	"homepage": "https://github.com/LeonardPauli/LayerRenamer",
 	"appcast": "https://github.com/LeonardPauli/LayerRenamer/blob/master/appcast.xml?raw=true",
-	"version": "1.1",
+	"version": "1.2",
 	"identifier": "com.leonardpauli.sketch.layerrenamer",
 	"bundleVersion": 1,
 	"commands": [{

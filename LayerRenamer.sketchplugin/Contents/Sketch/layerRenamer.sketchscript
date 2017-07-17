@@ -234,57 +234,6 @@ var layerRenamerSelect = function(context) {
 	selection.some(function(layer){return handleLayer(layer, 0)})
 
 
-
-	var findLayersUsingRelativePath = function (baseLayers, path) {
-		var layers = []
-		var direction = path.match(/^:?(([<>])|((\d+n)?(([+-])?\d+)?))/)
-		if (!direction) throw 'Path "'+path+'" isn\'t valid'
-		var restPath = path.substr(direction[0].length)
-
-		if (direction[2]=='<') {
-			baseLayers.forEach(function(layer) {
-				if (layer.parentGroup) {
-					var parent = layer.parentGroup()
-					if (layers.indexOf(parent)<0)
-						layers.push(parent)
-				}
-			})
-		} else if (direction[2]=='>') {
-			baseLayers.forEach(function(layer) {
-				if (layer.layers) layer.layers()
-					.forEach(function(l) {layers.push(l)})
-			})
-		} else if (!direction[3] || !direction[3].length) { // containing group
-			throw 'Path "'+path+'" isn\'t valid.'
-		} else {
-			var usingModulus = !!direction[4]
-			var k = usingModulus? parseInt(direction[4]) : 1
-			var m = direction[5]? parseInt(direction[5]) : 0
-			var doRelative = direction[6]
-
-			baseLayers.forEach(function(layer, idx) {
-				var index = baseLayers.length-idx-1
-				if (usingModulus) {
-					if ((index+m)%k == 0)
-						layers.push(layer)
-				} else {
-					if (!layer.parentGroup) return;
-					var parent = layer.parentGroup()
-					var siblings = parent.layers()
-
-					var targetIdx = !doRelative? siblings.length-1-m : siblings.indexOf(layer) - m
-					if (targetIdx<0) targetIdx += siblings.length
-					if (targetIdx>=0 && targetIdx<siblings.length)
-						layers.push(siblings[targetIdx])
-				}
-			})
-		}
-
-		return !restPath.length? layers:
-			findLayersUsingRelativePath(layers, restPath)
-	}
-
-
 	var selectedTypesFreqs = {}
 	var addLayerKindToFreqs = function(layerKindName) {
 		if (!selectedTypesFreqs[layerKindName]) selectedTypesFreqs[layerKindName] = 0
@@ -297,7 +246,7 @@ var layerRenamerSelect = function(context) {
 	layersToBeSelected.forEach(function(layer) {
 		if (layer.isSelected()) return;
 		addLayerKindToFreqs(getLayerKind(layer))
-		log(layer.select_byExpandingSelection_(true, true))
+		log(layer.select_byExtendingSelection_(true, true))
 		//log(layer.select_byExtendingSelection_)
 		//layer.addToSelection()
 	})
@@ -406,13 +355,19 @@ function replaceLayerExpressionFlags(expression, layer, quoteStrings, selectionC
 		return '"'+ str.replace(new RegExp('"', 'g'),
 			'\\"') +'"'}
 
-	return expression.replace(/(%%)|%((?:p\.)+)?(-)?([kKtxywh]|n+|N+|i+|I+)/g,
-		function(all, escaped, useParent, useReverse, flag) {
+	return expression.replace(/(%%)|%([<>\d+np-]+)?(?:\.(-)?([kKtxywh]|n+|N+|i+|I+)|( )|$)/g,
+		function(all, escaped, useRelativePath, useReverse, flag, suffix) {
+			if (!suffix) suffix = ''
+			return (function(){
 			if (escaped) return '%'
 			var lyr = layer
-			if (useParent) for (var j=useParent.length/2; j>0; j--) {
-				lyr = lyr.parentGroup(); if (!lyr) return quoteStrings?null:'?';}
+			if (useRelativePath) {
+				var layers = findLayersUsingRelativePath([layer], useRelativePath.replace(/p/ig, '<'))
+				if (!layers.length) return quoteStrings?null:'?'
+				lyr = layers[0]
+			}
 
+			if (!flag) flag = 't'
 			if (flag.substr(0,1)=='n') return zeroPad(flag, !useReverse ? selectionCount-1-i : i)
 			if (flag.substr(0,1)=='N') return zeroPad(flag, !useReverse ? selectionCount-i   : i+1)
 			if (flag=='t') return quoteString(lyr.name())
@@ -432,6 +387,7 @@ function replaceLayerExpressionFlags(expression, layer, quoteStrings, selectionC
 			if (flag.substr(0,1)=='I') return zeroPad(flag, !useReverse ? siblings.length-indexInParent   : indexInParent+1)
 
 			return all
+			})()+suffix
 		})
 }
 
@@ -506,4 +462,55 @@ function showRegExHelpAlert(isSearch) {
 		'https://github.com/LeonardPauli/LayerRenamer'
 	NSWorkspace.sharedWorkspace()
 		.openURL(NSURL.URLWithString(link))
+}
+
+
+
+var findLayersUsingRelativePath = function (baseLayers, path) {
+	var layers = []
+	var direction = path.match(/^:?(([<>])|((\d+n)?(([+-])?\d+)?))/)
+	if (!direction) throw 'Path "'+path+'" isn\'t valid'
+	var restPath = path.substr(direction[0].length)
+
+	if (direction[2]=='<') {
+		baseLayers.forEach(function(layer) {
+			if (layer.parentGroup) {
+				var parent = layer.parentGroup()
+				if (layers.indexOf(parent)<0)
+					layers.push(parent)
+			}
+		})
+	} else if (direction[2]=='>') {
+		baseLayers.forEach(function(layer) {
+			if (layer.layers) layer.layers()
+				.forEach(function(l) {layers.push(l)})
+		})
+	} else if (!direction[3] || !direction[3].length) { // containing group
+		throw 'Path "'+path+'" isn\'t valid.'
+	} else {
+		var usingModulus = !!direction[4]
+		var k = usingModulus? parseInt(direction[4]) : 1
+		var m = direction[5]? parseInt(direction[5]) : 0
+		var doRelative = direction[6]
+
+		baseLayers.forEach(function(layer, idx) {
+			var index = baseLayers.length-idx-1
+			if (usingModulus) {
+				if ((index+m)%k == 0)
+					layers.push(layer)
+			} else {
+				if (!layer.parentGroup) return;
+				var parent = layer.parentGroup()
+				var siblings = parent.layers()
+
+				var targetIdx = !doRelative? siblings.length-1-m : siblings.indexOf(layer) - m
+				if (targetIdx<0) targetIdx += siblings.length
+				if (targetIdx>=0 && targetIdx<siblings.length)
+					layers.push(siblings[targetIdx])
+			}
+		})
+	}
+
+	return !restPath.length? layers:
+		findLayersUsingRelativePath(layers, restPath)
 }
