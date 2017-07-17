@@ -12,12 +12,10 @@ var scriptPath = coscript.env().scriptURL.path().stringByDeletingLastPathCompone
 var copyPageOutlineToClipboard = function(context) {
 	var doc = context.document
 	var page = doc.currentPage()
-	var selection = context.selection
-	var selectionCount = selection.count()
-	var selectionIsPage = selectionCount==0
-	if (selectionIsPage) {
-		selection = [page]
-		selectionCount = 1}
+	var selectedLayers = context.selection
+	var selectionIsPage = selectedLayers.length==0
+	var selection = selectionIsPage? [page]: selectedLayers
+	var selectionCount = selection.length
 
 	var defaultFlagsStr = 'pug'
 	var userDefaults = NSUserDefaults.standardUserDefaults()
@@ -87,7 +85,7 @@ var copyPageOutlineToClipboard = function(context) {
 			else if (layer.layers) loopLayers(layer.layers(), prefix+'\t')
 		})
 	}
-	selection.forEach(function(layer) {
+	selection.slice().forEach(function(layer) {
 		addLayerSingleRow(layer, prefix)	
 		loopLayers(layer.layers(), prefix+'\t')
 	})
@@ -295,11 +293,13 @@ var layerRenamerSelect = function(context) {
 	layersToBeSelected = !relativePath? layersToBeSelected:
 		findLayersUsingRelativePath(layersToBeSelected, relativePath)
 
-	page.deselectAllLayers()
+	context.api().selectedDocument.selectedLayers.clear()
 	layersToBeSelected.forEach(function(layer) {
 		if (layer.isSelected()) return;
 		addLayerKindToFreqs(getLayerKind(layer))
-		layer.select_byExpandingSelection_(true, true)
+		log(layer.select_byExpandingSelection_(true, true))
+		//log(layer.select_byExtendingSelection_)
+		//layer.addToSelection()
 	})
 
 
