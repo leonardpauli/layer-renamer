@@ -20,7 +20,7 @@ Tested with Sketch v. 45.1
 *Protip: if you skip deselecting, if will look through the ones selected*
 *Also: `⌘-enter` is faster then clicking the second button*
 
-<img src="https://github.com/LeonardPauli/LayerRenamer/raw/master/screenshot.png" width="100%">
+<img src="https://github.com/LeonardPauli/LayerRenamer/raw/master/demos/screenshot.png" width="100%">
 
 ---
 
@@ -53,6 +53,31 @@ Write `:` in the end of a search expression, followed by any of the following, s
 - `+1` layer after
 - `-4` layer four layers before
 This means you could write something like this: `input (\w+):<+1>3n+1` and in the replacement box write `$1 label decoration %I` to rename every third (skipping the first) layer, in the group right after the group containing the selected field. Better yet, it does so even if you would have tens (or thousands...) of those "named input fields with labels having lots of strange decoration"... Ok, but seriously, pretty handy.
+
+#### Transform cases flags
+You can transform string cases using flags when replacing. Try writing the following in the replace box: `\T $1 this becomes \U uppErcase \E or What?`, it should give you `ThisBecomes UPPERCASE or What?`;
+- `\L` lowercase, ie. "make the following characters lowercase"
+- `\U` UPPERCASE
+- `\C` camelCase
+- `\K` kebab-case
+- `\E` end, ie. stop changing the case
+- `\S` snake_case
+- `\T` TitleCase
+- `\W` word case
+
+<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/demos/transform%20cases.gif?raw=true" width="100%">
+
+#### Example workflow: Rename using child layer name
+Use case: You've got a bunch of similar structured groups with layers inside of them. All the groups are just called "Group", however the first layer inside has the right name! You would like to rename the parent group to the layers name, and then maybe rename all the layers. No problem with LayerRenamer!
+1. First, select the parent artboard (or just deselect all layers to select the page, if you want to rename the artboards)
+2. `cmd-alt-F`, and write `Grou`... + hit `enter` to select all layers whose name contains "Grou" (ie. `Group 1`)
+3. `cmd-alt-R`, keep the first box empty (to choose the whole name), and in the second, write `icon %>0.t`, hit `enter`
+4. This will replace all selected groups names with "icon " followed by their first child layer's name (`%`, flag/start navigate, `>` children, `0` first, `.t` title/name)
+5. Now, select all the groups first child; `cmd-alt-F`, write `:>0` (`:` start navigate, `>` children, `0` first), and hit `cmd-enter` to start the filter from the currently selected groups
+6. `cmd-alt-R`, leave first empty, put `image` or something in second, hit `enter`
+7. Enjoy all the extra time you suddenly have left over :)
+
+<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/demos/rename%20group%20using%20inner%20layer%20name.gif?raw=true" width="100%">
 
 
 ### Installation

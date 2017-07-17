@@ -328,6 +328,7 @@ var layerRenamerRename = function(context) {
 		var str = replaceLayerExpressionFlags(replaceStr, layer, false, selectionCount, i)
 
 		var name = nameOld.replace(reg, str)
+		name = transformStringCaseUsingFlags(name)
 		if (nameOld!=name) nrOfReplaced++
 
 		dLog(paddStringToLength(''+nameOld, 25, true)
@@ -355,7 +356,7 @@ function replaceLayerExpressionFlags(expression, layer, quoteStrings, selectionC
 		return '"'+ str.replace(new RegExp('"', 'g'),
 			'\\"') +'"'}
 
-	return expression.replace(/(%%)|%([<>\d+np-]+)?(?:\.(-)?([kKtxywh]|n+|N+|i+|I+)|( )|$)/g,
+	return expression.replace(/(%%)|%([<>\d+np-]+)?(?:\.?(-)?([kKtxywh]|n+|N+|i+|I+)|( )|$)/g,
 		function(all, escaped, useRelativePath, useReverse, flag, suffix) {
 			if (!suffix) suffix = ''
 			return (function(){
@@ -418,6 +419,7 @@ function showRegExHelpAlert(isSearch) {
 		'Use parenthesis to create capture groups; eg. to rename '
 		+'"item 57 flower" to "flower-57", we could do find: "(\\d+) (\\w+)", replace with: "$2-$1". '
 		+'$1 would reference to first capture group, that is, the number ("\\d+"), etc.'
+		+'\nPs. you can transform string cases using flags \\L,\\U,\\C,\\K,\\E,\\S,\\T,\\W; ie. `\\T this becomes \\U uppErcase \\E or What?` -> `ThisBecomes UPPERCASE or What?`'
 		:
 		'Use parenthesis to create capture groups; eg. filtering items like "item 57 flower"'
 		+'using the regex  "item (\\d+)", and expression "$1 < 20 and (shape or group)"'
@@ -513,4 +515,47 @@ var findLayersUsingRelativePath = function (baseLayers, path) {
 
 	return !restPath.length? layers:
 		findLayersUsingRelativePath(layers, restPath)
+}
+
+
+
+var transformStringCaseUsingFlags = function (str) {
+	// var str = "\\Klowercase \\KUPPERCASE \\KcamelCase \\Kkebab-case \\Kend \\Ksnake_case \\KTitleCase"
+	// str += "\n\\LlowerCase \\UupperCase \\CcamelCase \\KkebabCase \\Eend \\SsnakeCase \\TtitleCase"
+	return str.replace(/(?:\\([LUCKESTW])((?:.|\s)+?)(?=(?:\\[LUCKESTW])|$))/g, function (all, flag, str) {
+		var toKebabCase = function (str) {
+			return str
+			.replace(/([a-z])([A-Z])/g, function (_,f,l) { return f+'-'+l }) // convert camel/title case
+			.toLowerCase() // discard case information
+			.replace(/_(\w)/ig, function (_,l) {return '-'+l }) // convert snake case
+			.replace(/ (\w)/ig, function (_,l) {return '-'+l }) // convert word case
+		}
+		var transformers = {
+			L: function (str) { // lowercase
+				return str.toLowerCase()
+			},
+			U: function (str) { // UPPERCASE
+				return str.toUpperCase()
+			},
+			C: function (str) { // camelCase
+				return toKebabCase(str).replace(/-(\w)/ig, function (_,l) {return l.toUpperCase() })
+			},
+			K: function (str) { // kebab-case
+				return toKebabCase(str)
+			},
+			E: function (str) { // end
+				return str
+			},
+			S: function (str) { // snake_case
+				return toKebabCase(str).replace(/-(\w)/ig, function (_,l) {return '_'+l })
+			},
+			T: function (str) { // TitleCase
+				return toKebabCase(str).replace(/(^|-)(\w)/ig, function (_1,_2,l) {return l.toUpperCase() })
+			},
+			W: function (str) { // word case
+				return toKebabCase(str).replace(/-(\w)/ig, function (_,l) {return ' '+l })
+			},
+		}
+		return transformers[flag](str)
+	})
 }
