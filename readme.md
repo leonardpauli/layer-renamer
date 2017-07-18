@@ -77,7 +77,13 @@ Use case: You've got a bunch of similar structured groups with layers inside of 
 6. `cmd-alt-R`, leave first empty, put `image` or something in second, hit `enter`
 7. Enjoy all the extra time you suddenly have left over :)
 
+<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/demos/rename%20using%20children.gif?raw=true" width="100%">
+More advanced:
 <img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/demos/rename%20group%20using%20inner%20layer%20name.gif?raw=true" width="100%">
+
+#### Beta: Copy outline
+Use case: The folder/layer structure you've got in the sidebar could be made to closely resemble the actual markup or css, etc. Together with the plugin, you'll also get an action called "Copy page outline". Just select a parent layer or deselect everything (to export the whole page), then run the action. This is very much just a hint of [what to come](https://github.com/LeonardPauli/LayerRenamer/issues/2), nevertheless handy as it is.
+<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/demos/copy%20outline%20pug%20beta.gif?raw=true" width="100%">
 
 
 ### Installation
@@ -90,6 +96,9 @@ Leave the search/find field empty to match everything
 Leaving the expression field empty defaults to `!path && !artboard`
 
 ⚠️ Seems like you can't select both layers and their containing group simultaneously. Because of this, if the group is matched (or combined shape container for that matter), it won't match anything inside of it. Add expression !group (or !shape) to search its content instead.
+
+### Contribute
+Feel like adding / fixing something? Create an issue and/or send a pull request! :D
  
 ### Say thanks
 If you enjoy this plugin, please consider [buying me some oatgurt](https://www.paypal.me/leonardpauli/5USD). You can also drop me a line or [follow  me on Twitter](http://twitter.com/leonardpauli). Got an idea for a new plugin? Send me a tweet!
