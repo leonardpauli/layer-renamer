@@ -1,0 +1,14 @@
+# todo
+' LeonardPauli/layer-renamer, sketch plugin
+	Created by Leonard Pauli, 6 jun 2018
+
+- update
+	- change structure of prev LayerRenamer + merge in
+	- add as submodule to lpdocs
+	- get working (inc shortcut), commit + publish minor
+	- fix %N issue, commit + publish patch
+	- explore adding webview as interface, commmit + publish minor
+	- show props values, commit + publish minor
+	- show found layers before and after, commit + publish minor
+		write match regex -> each group gets color buble
+	- answer github messages, update readme, post in sketch forum
