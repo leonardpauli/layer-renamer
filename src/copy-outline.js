@@ -1,97 +1,99 @@
 // copy-outline.js
 // LayerRenamer
-// 
+//
 // created by Leonard Pauli, jan 2017
 // copyright © Leonard Pauli 2017-2018
 
 import {scriptDirGet} from './utils'
 const scriptDir = scriptDirGet(coscript)
 
-export default function(context) {
-	var doc = context.document
-	var page = doc.currentPage()
-	var selectedLayers = context.selection
-	var selectionIsPage = selectedLayers.length==0
-	var selection = selectionIsPage? [page]: selectedLayers
-	var selectionCount = selection.length
+export default function (context) {
+	const doc = context.document
+	const page = doc.currentPage()
+	const selectedLayers = context.selection
+	const selectionIsPage = selectedLayers.length==0
+	const selection = selectionIsPage? [page]: selectedLayers
+	const selectionCount = selection.length
 
-	var defaultFlagsStr = 'pug'
-	var userDefaults = NSUserDefaults.standardUserDefaults()
-	var pastFlagsStr = userDefaults.objectForKey_("LayerRenamer-outline-flags-value") || defaultFlagsStr
+	const defaultFlagsStr = 'pug'
+	const userDefaults = NSUserDefaults.standardUserDefaults()
+	const pastFlagsStr = userDefaults.objectForKey_('LayerRenamer-outline-flags-value') || defaultFlagsStr
 
-	var alert = showAlert({
+	const alert = showAlert({
 		title: 'Copy '+(selectionIsPage?'page':'selection')+' as outline',
 		message: 'Protip: Use ⌘-⎇-F to filter first. Some options are available; status (ie. include locked and hidden status), !path, kind, !textContent, pug',
-		fields: {_flags:[defaultFlagsStr,'Optionally list onptions, like: kind status !path']},
-		buttons: ['Copy','Cancel'],
-		beforeShow: function (alert) {
-			var rawAlert = alert._v.alert()
+		fields: {_flags: [defaultFlagsStr, 'Optionally list onptions, like: kind status !path']},
+		buttons: ['Copy', 'Cancel'],
+		beforeShow (alert) {
+			const rawAlert = alert._v.alert()
 			
-			var filePath = scriptDir+'Resources/icons/copyPageOutlineToClipboard.png'
-			var image = NSImage.alloc().initWithContentsOfFile(filePath)
+			const filePath = scriptDir+'Resources/icons/copyPageOutlineToClipboard.png'
+			const image = NSImage.alloc().initWithContentsOfFile(filePath)
 			rawAlert.setIcon(image)
-		}
+		},
 	})
-	if (alert.selected.title=='Cancel') return;
+	if (alert.selected.title=='Cancel') return
 
-	var flagsStr = alert.fields.flags.value
+	let flagsStr = alert.fields.flags.value
 	if (!flagsStr.length()) flagsStr = defaultFlagsStr
-	var flagKeys = flagsStr.split(' ')
-	var flags = {
+	const flagKeys = flagsStr.split(' ')
+	const flags = {
 		path: true,
 		textContent: true,
 		status: false,
 		kind: false,
-		pug: false
+		pug: false,
 	}
-	flagKeys.forEach(function(key) {
-		var value = key.split('=')
+	flagKeys.forEach(key=> {
+		let value = key.split('=')
 		key = value[0]
 		value = value[1]
-		if (key[0]=='!') {key=key.substr(1);value=false}
-		else if (value===undefined) value = true
+		if (key[0]=='!') { key=key.substr(1); value=false } else if (value===undefined) value = true
 		flags[key] = value
 	})
 
-	var txt = ''
-	var prefix = ''
-	function addLayerSingleRow(layer, prefix) {
-		var name = layer.name()
-		var kind = getLayerKind(layer)
-		if (flags.pug && kind=='Path') return;
-		if (flags.pug && name=='bg' && kind=='Shape') return;
+	let txt = ''
+	const prefix = ''
+	function addLayerSingleRow (layer, prefix) {
+		const name = layer.name()
+		const kind = getLayerKind(layer)
+		if (flags.pug && kind=='Path') return
+		if (flags.pug && name=='bg' && kind=='Shape') return
 		txt += prefix
-		if (flags.pug && name.substr(0,1).match(/[a-z]/))
+		if (flags.pug && name.substr(0, 1).match(/[a-z]/))
 			txt += '.'
 		txt += name
 		if (flags.kind) txt += ': '+kind
-			//+(layer.isSelected()?' ✓':'')
+		// +(layer.isSelected()?' ✓':'')
 		if (flags.status) {
-			txt += (layer.isLocked()?' 🔒':'')
-			txt += (!layer.isVisible()?' ∅':'')}
+			txt += layer.isLocked()?' 🔒':''
+			txt += !layer.isVisible()?' ∅':''
+		}
 		if (flags.textContent && kind=='Text') {
-			var strVal = layer.stringValue()+''
-			txt+= (strVal.length>80)? '.\n'+prefix+'\t'+strVal: ' '
-			txt+=strVal}
-		txt += '\n'}
+			const strVal = layer.stringValue()+''
+			txt+= strVal.length>80? '.\n'+prefix+'\t'+strVal: ' '
+			txt+=strVal
+		}
+		txt += '\n'
+	}
 
-	var loopLayers = function(layers, prefix) {
-		layers.slice().reverse().forEach(function(layer) {
+	var loopLayers = function (layers, prefix) {
+		layers.slice().reverse().forEach(layer=> {
 			addLayerSingleRow(layer, prefix)
 
-			if (!flags.path && getLayerKind(layer)=='Shape') return false;
+			if (!flags.path && getLayerKind(layer)=='Shape') return false
 			else if (layer.layers) loopLayers(layer.layers(), prefix+'\t')
 		})
 	}
-	selection.slice().forEach(function(layer) {
-		addLayerSingleRow(layer, prefix)	
+	selection.slice().forEach(layer=> {
+		addLayerSingleRow(layer, prefix)
 		loopLayers(layer.layers(), prefix+'\t')
 	})
 
 	NSPasteboard.generalPasteboard().clearContents()
 	NSPasteboard.generalPasteboard().setString_forType_(txt, NSStringPboardType)
-	doc.showMessage("Page outline copied to clipboard")
+	doc.showMessage('Page outline copied to clipboard')
 
 	// Save for later
-	userDefaults.setObject_forKey_(flagsStr, "LayerRenamer-outline-flags-value")
+	userDefaults.setObject_forKey_(flagsStr, 'LayerRenamer-outline-flags-value')
 }

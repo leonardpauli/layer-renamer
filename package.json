@@ -10,16 +10,24 @@
     "main": "plugin.sketchplugin"
   },
   "scripts": {
+    "lint": "eslint --fix 'src/**/*.js'",
+    "lint:watch": "onchange 'src/**/*.js' -d 200 -w -- npm run --silent lint {{changed}}",
     "build": "skpm-build",
     "watch": "skpm-build --watch",
     "start": "skpm-build --watch --run",
     "postinstall": "npm run build && skpm-link"
   },
   "devDependencies": {
+    "@leonardpauli/eslint-config": "^0.1.2",
     "@skpm/builder": "^0.4.0",
     "@skpm/extract-loader": "^1.0.1",
+    "babel-eslint": "^8.2.3",
     "css-loader": "^0.28.7",
-    "html-loader": "^0.5.1"
+    "eslint": "^4.19.1",
+    "eslint-plugin-jest": "^21.15.2",
+    "eslint-plugin-vue": "^4.4.0",
+    "html-loader": "^0.5.1",
+    "onchange": "^3.3.0"
   },
   "resources": [
     "resources/**/*.js"
