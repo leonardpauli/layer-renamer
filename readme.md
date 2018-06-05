@@ -99,6 +99,8 @@ Leaving the expression field empty defaults to `!path && !artboard`
 
 ### Contribute
 Feel like adding / fixing something? Create an issue and/or send a pull request! :D
+
+See [skpm readme](https://github.com/skpm/skpm/blob/master/README.md) and [lpdocs/design/sketch/plugins/create](https://github.com/leonardpauli/docs/tree/master/design/sketch/plugins/create.rim) on how to get started.
  
 ### Say thanks
 If you enjoy this plugin, please consider [buying me some oatgurt](https://www.paypal.me/leonardpauli/5USD). You can also drop me a line or [follow  me on Twitter](http://twitter.com/leonardpauli). Got an idea for a new plugin? Send me a tweet!

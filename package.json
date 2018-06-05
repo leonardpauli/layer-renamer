@@ -1,0 +1,32 @@
+{
+  "name": "layer-renamer",
+  "version": "2.0.0",
+  "engines": {
+    "sketch": ">=3.0"
+  },
+  "skpm": {
+    "name": "layer-renamer",
+    "manifest": "src/manifest.json",
+    "main": "plugin.sketchplugin"
+  },
+  "scripts": {
+    "build": "skpm-build",
+    "watch": "skpm-build --watch",
+    "start": "skpm-build --watch --run",
+    "postinstall": "npm run build && skpm-link"
+  },
+  "devDependencies": {
+    "@skpm/builder": "^0.4.0",
+    "@skpm/extract-loader": "^1.0.1",
+    "css-loader": "^0.28.7",
+    "html-loader": "^0.5.1"
+  },
+  "resources": [
+    "resources/**/*.js"
+  ],
+  "dependencies": {
+    "@leonardpauli/sketch-module-web-view": "^1.1.7-lp.1",
+    "string-from-object": "^1.0.4"
+  },
+  "author": "Leonard Pauli <leonardpauli@me.com>"
+}

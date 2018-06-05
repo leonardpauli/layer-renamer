@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
 	"name": "LayerRenamer",
 	"description": "Find or rename multiple layers at once using RegEx and flags in Sketch (v.45)",
 	"author": "Leonard Pauli",
@@ -36,4 +37,21 @@
 		"title": "LayerRenamer",
 		"items": ["layerRenamerRename", "layerRenamerSelect", "copyPageOutlineToClipboard"]
 	}
+=======
+  "compatibleVersion": 3,
+  "bundleVersion": 1,
+  "commands": [
+    {
+      "name": "my-command",
+      "identifier": "my-command-identifier",
+      "script": "./my-command.js"
+    }
+  ],
+  "menu": {
+    "title": "my-plugin-ww",
+    "items": [
+      "my-command-identifier"
+    ]
+  }
+>>>>>>> from-skpm
 }
