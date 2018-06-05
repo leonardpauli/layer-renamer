@@ -1,3 +1,9 @@
+// index.js
+// LayerRenamer
+// 
+// created by Leonard Pauli, jan 2017 + jun 2018
+// copyright © Leonard Pauli 2017-2018
+
 import UI from 'sketch/ui'
 import {showCursorPopupBrowserWindow} from './utils'
 

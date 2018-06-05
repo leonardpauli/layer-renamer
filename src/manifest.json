@@ -1,57 +1,44 @@
 {
-<<<<<<< HEAD
 	"name": "LayerRenamer",
 	"description": "Find or rename multiple layers at once using RegEx and flags in Sketch (v.45)",
 	"author": "Leonard Pauli",
-	"homepage": "https://github.com/LeonardPauli/LayerRenamer",
-	"appcast": "https://github.com/LeonardPauli/LayerRenamer/blob/master/appcast.xml?raw=true",
+	"homepage": "https://github.com/leonardpauli/layer-renamer",
+	"appcast": "https://github.com/leonardpauli/layer-renamer/blob/master/appcast.xml?raw=true",
 	"version": "1.3",
-	"identifier": "com.leonardpauli.sketch.layerrenamer",
+	"identifier": "com.leonardpauli.sketch.layer-renamer",
+	"compatibleVersion": 3,
 	"bundleVersion": 1,
 	"commands": [{
 		"name": "Rename Layers",
-		"identifier": "layerRenamerRename",
-		"handler": "layerRenamerRename",
-		"shortcut": "cmd alt r",
-		"script": "layerRenamer.sketchscript",
 		"description": "Rename multiple layers at once",
-		"icon": "icons/layerRenamerRename.png"
+		"icon": "icons/layerRenamerRename.png",
+		"shortcut": "cmd alt r",
+		"identifier": "layer-renamer-rename",
+		"script": "./index.js",
+		"handler": "rename"
 	},{
 		"name": "Select Layers",
-		"identifier": "layerRenamerSelect",
-		"handler": "layerRenamerSelect",
-		"shortcut": "cmd alt f",
-		"script": "layerRenamer.sketchscript",
 		"description": "Find layers with RegEx",
-		"icon": "icons/layerRenamerSelect.png"
+		"icon": "icons/layerRenamerSelect.png",
+		"shortcut": "cmd alt f",
+		"identifier": "layer-renamer-select",
+		"script": "./index.js",
+		"handler": "select"
 	},{
 		"name": "Copy page outline",
-		"identifier": "copyPageOutlineToClipboard",
-		"handler": "copyPageOutlineToClipboard",
-		"shortcut": "cmd alt shift ctrl c",
-		"script": "layerRenamer.sketchscript",
 		"description": "copyPageOutlineToClipboard",
-		"icon": "icons/copyPageOutlineToClipboard.png"
+		"icon": "icons/copyPageOutlineToClipboard.png",
+		"shortcut": "cmd alt shift ctrl c",
+		"identifier": "layer-renamer-copy-outline",
+		"script": "./index.js",
+		"handler": "copyOutline"
 	}],
 	"menu": {
-		"title": "LayerRenamer",
-		"items": ["layerRenamerRename", "layerRenamerSelect", "copyPageOutlineToClipboard"]
+		"title": "🔍 LayerRenamer",
+		"items": [
+			"layer-renamer-select",
+			"layer-renamer-rename",
+			"layer-renamer-copy-outline"
+		]
 	}
-=======
-  "compatibleVersion": 3,
-  "bundleVersion": 1,
-  "commands": [
-    {
-      "name": "my-command",
-      "identifier": "my-command-identifier",
-      "script": "./my-command.js"
-    }
-  ],
-  "menu": {
-    "title": "my-plugin-ww",
-    "items": [
-      "my-command-identifier"
-    ]
-  }
->>>>>>> from-skpm
 }
