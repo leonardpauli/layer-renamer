@@ -5,13 +5,14 @@
 // copyright © Leonard Pauli 2017-2018
 
 import UI from 'sketch/ui'
-import {showCursorPopupBrowserWindow} from './utils'
+import showCursorPopupBrowserWindow from './showCursorPopupBrowserWindow'
 import webviewContent from '../resources/webview.html'
 
 let existingWindow = null
 export default function (context) {
-	coscript.setShouldKeepAround(true)
 	UI.message(0+' start')
+	return
+	coscript.setShouldKeepAround(true)
 
 	if (existingWindow)
 		return UI.message('already existing')
@@ -33,3 +34,5 @@ export default function (context) {
 		},
 	})
 }
+
+export const rename = context=> UI.message(1+' RENMAE')
