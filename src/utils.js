@@ -6,7 +6,6 @@
 
 /* globals NSStringFromClass */
 
-import {showCursorPopupBrowserWindow} from '@leonardpauli/sketch-module-web-view/lib/lp-utils'
 import utils from 'sketch-utils'
 import {log as _logd} from 'string-from-object'
 
@@ -54,10 +53,36 @@ const paddStringToLength = (str, len, append, char)=> {
 
 const scriptDirGet = coscript=> coscript.env().scriptURL.path().stringByDeletingLastPathComponent().stringByDeletingLastPathComponent()+'/'
 
+const openUrl = url=> NSWorkspace.sharedWorkspace().openURL(NSURL.URLWithString(url))
+
+const storageStringGet = ({namespace})=> ({
+	store: NSUserDefaults.alloc().initWithSuiteName(`plugin.sketch.${namespace}`),
+	// TODO: later use obj-c refs for performance?
+	// store.boolForKey(k), store.doubleForKey(k), store.arrayForKey(k), store.dictionaryForKey(k)
+	// store.setBool_forKey(v, k), store.setDouble_forKey(v, k)
+	set (k, v) {
+		this.store.setObject_forKey(v, k)
+		this.store.synchronize()
+	},
+	get (k) { return String(this.store().stringForKey(k) || '') || void 0 },
+})
+
+const storageJSONGet = ({namespace})=> ({
+	store: storageStringGet({namespace}),
+	get (k) {
+		const v = this.store.get(k); if (!v) return void 0
+		try { return JSON.parse(v) } catch (_) { return void 0 }
+	},
+	set (k, v) { return this.store.set(k, JSON.stringify(v)) },
+})
+
 export {
-	showCursorPopupBrowserWindow,
+	isProduction,
 	logd, logns,
 	scriptDirGet,
 	getLayerKind,
 	paddStringToLength,
+	openUrl,
+	storageStringGet,
+	storageJSONGet,
 }

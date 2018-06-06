@@ -4,35 +4,20 @@
 // created by Leonard Pauli, jan 2017 + jun 2018
 // copyright © Leonard Pauli 2017-2018
 
+/* globals NSStringPboardType */
+
 import UI from 'sketch/ui'
-import showCursorPopupBrowserWindow from './showCursorPopupBrowserWindow'
-import webviewContent from '../resources/webview.html'
+import mainWindow from './mainWindow'
+import outlineFromSelectionAsString from './outlineFromSelectionAsString'
 
-let existingWindow = null
-export default function (context) {
-	UI.message(0+' start')
-	return
-	coscript.setShouldKeepAround(true)
+export default context=> UI.message(0+' start')
 
-	if (existingWindow)
-		return UI.message('already existing')
+export const rename = context=> (UI.message(1+' RENMAE'), mainWindow.show({rename: {show: true}}, {context}))
+export const select = context=> (UI.message(1+' SELECT'), mainWindow.show({rename: {show: false}}, {context}))
 
-	existingWindow = showCursorPopupBrowserWindow({
-		reuseId: 'ww-win1',
-		url: webviewContent,
-		onLoadFinish: ()=> { console.log('UI loaded!') },
-		onNativeLog: s=> { // TODO: create handlers/actions obj instead, with eval method for js execution.. or cb?
-			UI.message(s)
-			existingWindow.webContents.executeJavaScript(`setRandomNumber && setRandomNumber(${Math.random()})`)
-		},
-		didClose: ()=> {
-			existingWindow = null
-			console.log('close')
-			coscript.setShouldKeepAround(false) // allow session tear down
-			// eslint-disable-next-line no-throw-literal
-			throw null // force tear down start
-		},
-	})
+export const copyOutline = context=> {
+	const str = outlineFromSelectionAsString(context)({pug: true})
+	NSPasteboard.generalPasteboard().clearContents()
+	NSPasteboard.generalPasteboard().setString_forType_(str, NSStringPboardType)
+	UI.message('Page outline copied to clipboard')
 }
-
-export const rename = context=> UI.message(1+' RENMAE')
