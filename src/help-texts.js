@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 function showRegExHelpAlert (isSearch) {
 	const title = !isSearch
 		? 'Replace more powerful with Regular Expressions':

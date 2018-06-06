@@ -4,13 +4,18 @@
 // created by Leonard Pauli, jan 2017
 // copyright © Leonard Pauli 2017-2018
 
+import {findLayersUsingRelativePath, replaceLayerExpressionFlags, transformStringCaseUsingFlags} from './custom-utils'
+import {getLayerKind} from './utils'
+
+
 const layerRenamerSelect = function (context) {
-	dLog('👉'+paddStringToLength('  Layer name', 24, true)+
-			 paddStringToLength('Matches', 40, true)+
-			 paddStringToLength('Expression', 40, true))
+	// dLog('👉'+paddStringToLength('  Layer name', 24, true)+
+	// 		 paddStringToLength('Matches', 40, true)+
+	// 		 paddStringToLength('Expression', 40, true))
+
 	const doc = context.document
 	const page = doc.currentPage()
-	let selection = context.selection
+	let {selection} = context
 	let selectionCount = selection.count()
 
 	// Get past values
@@ -64,11 +69,8 @@ const layerRenamerSelect = function (context) {
 
 	let layersToBeSelected = []
 	let currIterationIdx = 0
-	var handleLayer = function (layer, depth) {
-		function digDeeper () {
-			if (!layer.layers) return false
-			return layer.layers().some(layer=> handleLayer(layer, depth+1))
-		}
+	const handleLayer = (layer, depth)=> {
+		const digDeeper = ()=> !layer.layers? false : layer.layers().some(layer=> handleLayer(layer, depth+1))
 
 		const name = layer.name()
 		let matches = name.match(reg)
@@ -90,25 +92,26 @@ const layerRenamerSelect = function (context) {
 			return isNaN(asNr)? '"'+match+'"': asNr
 		})
 		str = str.replace(/\$(\d+)/g, (wholeMatch, nr)=> {
-			var nr = parseInt(nr)
-			return nr<matches.length ? matches[nr]: wholeMatch
+			nr = parseInt(nr, 10)
+			return nr < matches.length ? matches[nr]: wholeMatch
 		})
 
 		// Setup expression variables
 		const layerKindName = getLayerKind(layer)
 		let vars = 'var '+'Shape/Group/Artboard/Page/Slice/Bitmap/Text/Symbol/SymbolMaster/Path'.split('/').map(name=> name.toLowerCase()+'='+(layerKindName==name?'true':'false')).join(', ')+';'
-		vars += 'var '+'hidden'+'='+(!layer.isVisible()?'true':'false')+';'
-		vars += 'var '+'locked'+'='+(layer.isLocked()?'true':'false')+';'
+		vars += 'var hidden='+(!layer.isVisible()?'true':'false')+';'
+		vars += 'var locked='+(layer.isLocked()?'true':'false')+';'
 
 		// Try evaluate expression and (de)select current layer
 		try {
-			const res = eval(vars+str)
+			// eslint-disable-next-line no-new-func
+			const res = Function(`"use strict";${vars};return (${str});`)()
 			const couldSelect = (shouldFilterSelected && depth==0) || (shouldFilterInside && depth>0)
 			const shouldSelect = couldSelect && !!res
 
-			dLog((shouldSelect? '✅': '😡')+paddStringToLength('  '+name, 24, true)+
-			 paddStringToLength(!matches?'null':'['+matches.join(', ')+']', 40, true)+
-			 paddStringToLength(str, 40, true))
+			// dLog((shouldSelect? '✅': '😡')+paddStringToLength('  '+name, 24, true)+
+			//  paddStringToLength(!matches?'null':'['+matches.join(', ')+']', 40, true)+
+			//  paddStringToLength(str, 40, true))
 
 			// layer.setIsSelected(shouldSelect)
 			if (shouldSelect) layersToBeSelected.push(layer)

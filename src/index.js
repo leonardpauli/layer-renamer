@@ -6,7 +6,9 @@
 
 import UI from 'sketch/ui'
 import {showCursorPopupBrowserWindow} from './utils'
+import webviewContent from '../resources/webview.html'
 
+let existingWindow = null
 export default function (context) {
 	coscript.setShouldKeepAround(true)
 	UI.message(0+' start')
@@ -16,15 +18,17 @@ export default function (context) {
 
 	existingWindow = showCursorPopupBrowserWindow({
 		reuseId: 'ww-win1',
-		url: require('../resources/webview.html'),
+		url: webviewContent,
 		onLoadFinish: ()=> { console.log('UI loaded!') },
-		onNativeLog: s=> {
+		onNativeLog: s=> { // TODO: create handlers/actions obj instead, with eval method for js execution.. or cb?
 			UI.message(s)
-			webContents.executeJavaScript(`setRandomNumber && setRandomNumber(${Math.random()})`)
+			existingWindow.webContents.executeJavaScript(`setRandomNumber && setRandomNumber(${Math.random()})`)
 		},
 		didClose: ()=> {
+			existingWindow = null
 			console.log('close')
 			coscript.setShouldKeepAround(false) // allow session tear down
+			// eslint-disable-next-line no-throw-literal
 			throw null // force tear down start
 		},
 	})

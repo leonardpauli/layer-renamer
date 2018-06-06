@@ -4,9 +4,11 @@
 // created by Leonard Pauli, jan 2017
 // copyright © Leonard Pauli 2017-2018
 
-const layerRenamerRename = function (context) {
+import {replaceLayerExpressionFlags, transformStringCaseUsingFlags} from './custom-utils'
+
+const layerRenamerRename = context=> {
 	const doc = context.document
-	const selection = context.selection
+	const {selection} = context
 	const selectionCount = selection.count()
 	if (selectionCount == 0) {
 		doc.showMessage('No layers selected - no layers to rename')
@@ -50,7 +52,7 @@ const layerRenamerRename = function (context) {
 	userDefaults.setObject_forKey_(replaceStr, 'LayerRenamer-replace-value')
 	
 	let nrOfReplaced = 0
-	for (let i=0; i<selectionCount; i++) {
+	for (let i=0; i < selectionCount; i++) {
 		const layer = selection[i]
 		const nameOld = layer.name()
 
@@ -59,10 +61,6 @@ const layerRenamerRename = function (context) {
 		let name = nameOld.replace(reg, str)
 		name = transformStringCaseUsingFlags(name)
 		if (nameOld!=name) nrOfReplaced++
-
-		dLog(paddStringToLength(''+nameOld, 25, true)+
-			 paddStringToLength(str, 40, true)+
-			 paddStringToLength(name, 40, true))
 
 		layer.setName(name)
 	}

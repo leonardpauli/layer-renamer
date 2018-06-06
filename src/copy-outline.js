@@ -4,7 +4,9 @@
 // created by Leonard Pauli, jan 2017
 // copyright © Leonard Pauli 2017-2018
 
-import {scriptDirGet} from './utils'
+/* globals NSStringPboardType */
+
+import {scriptDirGet, getLayerKind} from './utils'
 const scriptDir = scriptDirGet(coscript)
 
 export default function (context) {
@@ -54,7 +56,7 @@ export default function (context) {
 
 	let txt = ''
 	const prefix = ''
-	function addLayerSingleRow (layer, prefix) {
+	const addLayerSingleRow = (layer, prefix)=> {
 		const name = layer.name()
 		const kind = getLayerKind(layer)
 		if (flags.pug && kind=='Path') return
@@ -77,7 +79,7 @@ export default function (context) {
 		txt += '\n'
 	}
 
-	var loopLayers = function (layers, prefix) {
+	const loopLayers = (layers, prefix)=> {
 		layers.slice().reverse().forEach(layer=> {
 			addLayerSingleRow(layer, prefix)
 

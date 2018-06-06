@@ -4,6 +4,8 @@
 // created by Leonard Pauli, jun 2018
 // copyright © Leonard Pauli 2017-2018
 
+/* globals NSStringFromClass */
+
 import {showCursorPopupBrowserWindow} from '@leonardpauli/sketch-module-web-view/lib/lp-utils'
 import utils from 'sketch-utils'
 import {log as _logd} from 'string-from-object'
