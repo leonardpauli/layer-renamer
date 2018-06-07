@@ -1,18 +1,17 @@
-// getChoosedLayers.js
+// layersChosenGet.js
 // LayerRenamer
 //
 // created by Leonard Pauli, jun 2018
 // copyright © Leonard Pauli 2018
 
-import {
-	evaluateExpressionStrRaw,
-	findLayersUsingRelativePath,
-} from './custom-utils'
-import {dlog, getLayerKind, regexEscape} from './utils'
-import config from './config'
+import {evaluateExpressionStrRaw} from './evaluateExpressionStr'
+import findLayersUsingRelativePath from './findLayersUsingRelativePath'
+import {layerKindGet} from './layers'
+import {dlog, regexEscape} from './misc'
+import config from '../config'
 
 
-// getChoosedLayers
+// layersChosenGet
 export default ({
 	search: { options, value: searchStr = '' },
 	shouldContinueOnExpressionError = o=> (dlog(o), false),
@@ -84,7 +83,7 @@ const handleLayerInner = (opt, state)=> (layer, depth = 0)=> {
 	const matches = name.match(reg)
 	if (!matches) return shouldFilterInside? digDeeper(): false
 
-	const layerKindName = getLayerKind(layer)
+	const layerKindName = layerKindGet(layer)
 
 	const {err, res, expression} = evaluateExpressionStrRaw({expressionStr, layer, matches, selectionCount, index: state.index++}, {layerKindName})
 	if (err) return !shouldContinueOnExpressionError({layerName: name, expression, err})

@@ -4,8 +4,8 @@
 // created by Leonard Pauli, jan 2017 + jun 2018
 // copyright © Leonard Pauli 2017-2018
 
-import {scriptDirGet, getLayerKind} from './utils'
-const scriptDir = scriptDirGet(coscript)
+import {layerKindGet} from '../utils/layers'
+
 
 /*
 const alert = showAlert({
@@ -23,6 +23,7 @@ const alert = showAlert({
 })
 if (alert.selected.title=='Cancel') return
 */
+
 
 // outlineFromSelectionAsString
 export default context=> (opt = {})=> {
@@ -45,7 +46,7 @@ export default context=> (opt = {})=> {
 	const prefix = ''
 	const addLayerSingleRow = (layer, prefix)=> {
 		const name = layer.name()
-		const kind = getLayerKind(layer)
+		const kind = layerKindGet(layer)
 		if (flags.pug && kind=='Path') return
 		if (flags.pug && name=='bg' && kind=='Shape') return
 		txt += prefix
@@ -70,7 +71,7 @@ export default context=> (opt = {})=> {
 		layers.slice().reverse().forEach(layer=> {
 			addLayerSingleRow(layer, prefix)
 
-			if (!flags.path && getLayerKind(layer)=='Shape') return false
+			if (!flags.path && layerKindGet(layer)=='Shape') return false
 			else if (layer.layers) loopLayers(layer.layers(), prefix+'\t')
 		})
 	}

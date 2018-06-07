@@ -5,8 +5,8 @@
 // copyright © Leonard Pauli 2018
 
 import UI from 'sketch/ui'
-import showCursorPopupBrowserWindow from './showCursorPopupBrowserWindow'
-import {logd, storageStringGet} from './utils'
+import showCursorPopupBrowserWindow from './utils/showCursorPopupBrowserWindow'
+import {logd, storageStringGet} from './utils/misc'
 import config from './config'
 
 import webviewContent from '../resources/webview.html'

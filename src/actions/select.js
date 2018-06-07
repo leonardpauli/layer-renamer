@@ -4,8 +4,8 @@
 // created by Leonard Pauli, jan 2017
 // copyright © Leonard Pauli 2017-2018
 
-import { selectLayers } from './custom-utils'
-import getChoosedLayers from './getChoosedLayers'
+import { layersSelect } from '../utils/layers'
+import layersChosenGet from '../utils/layersChosenGet'
 
 /*
 	const alert = showAlert({
@@ -27,15 +27,15 @@ import getChoosedLayers from './getChoosedLayers'
 
 // layerRenamerSelect
 export default context=> search=> {
-	const choosenLayers = getChoosedLayers({
+	const choosenLayers = layersChosenGet({
 		search,
 		getAllLayers: ()=> context.document.currentPage().layers(),
 		getSelectedLayers: ()=> context.selection,
 	})
 
-	const {kindFreqs} = selectLayers({
+	const {kindFreqs} = layersSelect({
 		layers: choosenLayers,
-		mode: selectLayers.modes.change,
+		mode: layersSelect.modes.change,
 		context,
 	})
 
