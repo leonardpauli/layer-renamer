@@ -4,6 +4,8 @@
 // created by Leonard Pauli, jan 2017
 // copyright © Leonard Pauli 2017-2018
 
+/* eslint-disable */
+
 import {replaceLayerExpressionFlags, transformStringCaseUsingFlags} from './custom-utils'
 
 const layerRenamerRename = context=> {

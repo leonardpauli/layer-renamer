@@ -8,10 +8,9 @@
 
 import utils from 'sketch-utils'
 import {log as _logd} from 'string-from-object'
+import config from './config'
 
-const isProduction = false // TODO: use process.env.NODE_ENV==='development'
-
-const logd = (...args)=> isProduction || _logd(...args)
+const logd = (...args)=> config.app.isProduction || _logd(...args)
 const logns = ns=> {
 	// cocoascript values are often of type MOBoxedValue, which uses custom toValue etc
 	// to inspect, using utils.prepareValue etc can be beneficial
@@ -44,10 +43,8 @@ const getLayerKind = obj=> {
 	return str
 }
 
-const paddStringToLength = (str, len, append, char)=> {
-	char = char || ' '
-	let txt = ''
-	for (let i=Math.max(0, len-str.length); i>0; i--) txt+=char
+const paddStringToLength = (str, len, append = false, char = ' ')=> {
+	let txt = ''; for (let i = Math.max(0, len-str.length); i>0; i--) txt += char
 	return append? str+txt: txt+str
 }
 
@@ -76,13 +73,14 @@ const storageJSONGet = ({namespace})=> ({
 	set (k, v) { return this.store.set(k, JSON.stringify(v)) },
 })
 
+const regexEscape = s=> s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
+
 export {
-	isProduction,
 	logd, logns,
 	scriptDirGet,
 	getLayerKind,
 	paddStringToLength,
 	openUrl,
-	storageStringGet,
-	storageJSONGet,
+	storageStringGet, storageJSONGet,
+	regexEscape,
 }

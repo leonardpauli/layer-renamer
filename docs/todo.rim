@@ -3,8 +3,38 @@
 	Created by Leonard Pauli, 6 jun 2018
 
 - update
-	- change structure of prev LayerRenamer + merge in
-	- add as submodule to lpdocs
+	// - change structure of prev LayerRenamer + merge in
+	// - add as submodule to lpdocs
+	- select
+		- simple
+		- ignore case
+		- regex
+		- globalMatch
+		- expression
+			- simple
+			- error check
+			- type
+			- flags
+		- path
+		- scope
+			// - all
+			- selectedAndInside
+			- onlySelected
+			- insideSelected
+		- commit WIP
+	- rename
+		' if rename is enabled, it won't change the selection
+		- simple
+		- capture groups
+		- flags
+		- 
+	- test persistant storage
+	- test webview com
+	- git tag 1.3, change appcast.xml + readme download link to point to github release
+	- extract/refactor functions
+		// - outline
+		- select
+		- rename
 	- get working (inc shortcut), commit + publish minor
 	- fix %N issue, commit + publish patch
 	- explore adding webview as interface, commmit + publish minor

@@ -9,7 +9,39 @@ import {scriptDirGet, getLayerKind} from './utils'
 const scriptDir = scriptDirGet(coscript)
 
 
-const replaceLayerExpressionFlags = (expression, layer, quoteStrings, selectionCount, i)=> {
+const evaluateExpressionStrRaw = ({expressionStr, layer, matches, selectionCount, index}, {layerKindName} = {})=> {
+	const matchesEvalPrepared = matches.map(match=> !match ? 'null':
+		!isNaN(parseFloat(match))? parseFloat(match):
+			`"${match}"`)
+
+	const expression = substituteCaptureGroupRefs(matchesEvalPrepared)(substituteLayerExpressionFlags({
+		expression: expressionStr,
+		layer, quoteStrings: true,
+		selectionCount, index,
+	}))
+
+	return {expression, ...evaluateExpressionStr({expression, layer}, {layerKindName})}
+}
+
+const substituteCaptureGroupRefs = matches=> str=> str.replace(/\$(\d+)/g, (id, nr)=>
+	(nr = parseInt(nr, 10), nr < matches.length ? matches[nr]: id))
+
+const evaluateExpressionStr = ({expression, layer}, {layerKindName = getLayerKind(layer)} = {})=> {
+	const layerKindNames = 'Shape/Group/Artboard/Page/Slice/Bitmap/Text/Symbol/SymbolMaster/Path'.split('/')
+	const vars = [
+		'var '+layerKindNames.map(s=> s.toLowerCase()+'='+(layerKindName==s?'true':'false')).join(', '),
+		'var hidden='+(!layer.isVisible()?'true':'false'),
+		'var locked='+(layer.isLocked()?'true':'false'),
+	].join(';')
+
+	try {
+		// eslint-disable-next-line no-new-func
+		const res = Function(`"use strict";${vars};return (${expression});`)()
+		return {res}
+	} catch (e) { return {err: e} }
+}
+
+const substituteLayerExpressionFlags = ({expression, layer, quoteStrings, selectionCount, index})=> {
 	const zeroPad = (template, source)=> {
 		if (template.length<=1 || quoteStrings) return source
 		let txt = ''+source
@@ -18,6 +50,8 @@ const replaceLayerExpressionFlags = (expression, layer, quoteStrings, selectionC
 		return txt
 	}
 	const quoteString = str=> !quoteStrings? str: `"${str.replace(/"/g, '\\"')}"`
+
+	// TODO: expressionStr.replace(/or/ig, '||').replace(/and/ig, '&&')
 
 	const re = /(%%)|%([<>\d+np-]+)?(?:\.?(-)?([kKtxywh]|n+|N+|i+|I+)|( )|$)/g
 	// eslint-disable-next-line max-params, complexity
@@ -31,8 +65,8 @@ const replaceLayerExpressionFlags = (expression, layer, quoteStrings, selectionC
 		}
 
 		if (!flag) flag = 't'
-		if (flag.substr(0, 1)=='n') return zeroPad(flag, !useReverse ? selectionCount-1-i : i)
-		if (flag.substr(0, 1)=='N') return zeroPad(flag, !useReverse ? selectionCount-i : i+1)
+		if (flag.substr(0, 1)=='n') return zeroPad(flag, !useReverse ? selectionCount-1-index : index)
+		if (flag.substr(0, 1)=='N') return zeroPad(flag, !useReverse ? selectionCount-index : index+1)
 		if (flag=='t') return quoteString(lyr.name())
 		if (flag=='x') return lyr.frame().x()
 		if (flag=='y') return lyr.frame().y()
@@ -136,8 +170,31 @@ const transformers = {
 const transformStringCaseUsingFlags = str=> str.replace(transformCaseRE, (all, flag, str)=> transformers[flag](str))
 
 
+const selectLayers = ({layers, mode = selectLayers.modes.change, context})=> {
+	if (mode === selectLayers.modes.change)
+		context.api().selectedDocument.selectedLayers.clear()
+	else throw new Error(`selectLayers mode ${mode} not yet supported, see code`)
+
+	const kindFreqs = {}
+	const addLayerKindToFreqs = layerKindName=> kindFreqs[layerKindName] = (kindFreqs[layerKindName] || 0) + 1
+
+	;[].forEach.call(layers, layer=> {
+		if (layer.isSelected()) return
+		addLayerKindToFreqs(getLayerKind(layer))
+		const r = layer.select_byExtendingSelection_(true, true)
+		// log(r)
+		// log(layer.select_byExtendingSelection_)
+		// layer.addToSelection()
+	})
+
+	return {kindFreqs}
+}
+selectLayers.modes = {set: 0, add: 1, remove: 2, intersection: 2, difference: 3 }
+
+
 export {
+	evaluateExpressionStrRaw,
 	findLayersUsingRelativePath,
-	replaceLayerExpressionFlags,
 	transformStringCaseUsingFlags,
+	selectLayers,
 }

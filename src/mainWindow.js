@@ -6,11 +6,12 @@
 
 import UI from 'sketch/ui'
 import showCursorPopupBrowserWindow from './showCursorPopupBrowserWindow'
-import {isProduction, logd, storageStringGet} from './utils'
+import {logd, storageStringGet} from './utils'
+import config from './config'
 
 import webviewContent from '../resources/webview.html'
 
-const pluginNamespace = 'layer-renamer' // TODO: get from manifest?
+const {app: {isProduction, namespace: pluginNamespace}} = config
 const storage = storageStringGet({namespace: pluginNamespace}) // storageJSONGet
 
 

@@ -1,5 +1,7 @@
 /* eslint-disable */
 import {overlayAssign} from '...?'
+import config from './config'
+
 
 const init = (o = {}, {savedOptions = {}} = {})=> {
 	const opt = options.current = overlayAssign(options.default(), savedOptions, o)
@@ -18,10 +20,12 @@ const options = global.mainWindowOptions = {
 
 		search: {
 			options: {
-				inSelection: false,
+				scope: config.search.scope.all,
 				regex: true,
-				pathAndFlags: true,
+				path: false,
+				expression: false,
 				caseSensitive: false,
+				globalMatch: false,
 			},
 
 			history: [],
