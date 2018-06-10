@@ -9,7 +9,13 @@
     "manifest": "src/manifest.json",
     "main": "plugin.sketchplugin"
   },
+  "author": "Leonard Pauli <leonardpauli@me.com>",
+  "repository": "github:leonardpauli/layer-renamer",
+  "license": "AGPL-3.0-or-later",
   "scripts": {
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --changedFilesWithAncestor --watch",
+    "test": "jest",
     "lint": "eslint --fix 'src/**/*.js'",
     "lint:watch": "onchange 'src/**/*.js' -d 200 -w -- npm run --silent lint {{changed}}",
     "build": "skpm-build",
@@ -18,9 +24,13 @@
     "postinstall": "npm run build && skpm-link"
   },
   "devDependencies": {
+    "@babel/core": "^7.0.0-beta.49",
+    "@babel/preset-env": "^7.0.0-beta.49",
+    "@babel/preset-react": "^7.0.0-beta.49",
     "@leonardpauli/eslint-config": "^0.1.2",
     "@skpm/builder": "^0.4.0",
     "@skpm/extract-loader": "^1.0.1",
+    "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^8.2.3",
     "css-loader": "^0.28.7",
     "eslint": "^4.19.1",
@@ -28,7 +38,11 @@
     "eslint-plugin-jest": "^21.15.2",
     "eslint-plugin-vue": "^4.4.0",
     "html-loader": "^0.5.1",
+    "jest": "^22.4.3",
     "onchange": "^3.3.0"
+  },
+  "jest": {
+    "verbose": true
   },
   "resources": [
     "resources/**/*.js"
@@ -36,6 +50,5 @@
   "dependencies": {
     "@leonardpauli/sketch-module-web-view": "^1.1.7-lp.2",
     "string-from-object": "^1.0.4"
-  },
-  "author": "Leonard Pauli <leonardpauli@me.com>"
+  }
 }
