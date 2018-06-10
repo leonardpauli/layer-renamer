@@ -6,6 +6,34 @@
 	// - change structure of prev LayerRenamer + merge in
 	// - add as submodule to lpdocs
 	- select
+		- create layerQuery
+			- layersLookupTable<id: layerRef>
+			- layerQuery
+				in
+					- layersLookupTable (mutable)
+					- queries<layerId: query>; query:
+						// count + id always included, though count always 1 if id given
+						nonNestedFields: title<Bool>, locked<Bool>, visible<Bool>, kind<Bool>
+						- fields:
+							- ...nonNestedFields
+							- children<{recursiveDepth: 1, ?query} or Empty>
+				out: layers (as flattened json array, nested children is id array), other types (eg. symbols, styles, etc)
+			- test
+		- create layerUpdateDelta
+			- layerId
+			- fieldKey
+			- action
+				- set
+				- move
+				- insert (( after/before/at )( (item/id)/(index/last/first) ))
+					- alias: replace: insert at ...
+					- alias: prepend: insert before first
+					- alias: append: insert after last
+				- remove ( it / (item/id) / index )
+			- value
+		- create layerUpdate {id, ...fields to update with new values}
+			diffs + invokes layerUpdateDelta
+		- refactor code to separate obj calls / objs + js logic
 		- simple
 		- ignore case
 		- regex
