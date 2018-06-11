@@ -6,7 +6,7 @@
 
 // assumes all items are unique and comparable between arrays with ===
 /* eslint brace-style:0, max-statements:0 */
-const arrayDeltaActions = ({move, add, remove})=> (as, bs)=> {
+export default function* arrayDeltaActions (as, bs) {
 	const gs = as.map(_=> false) // ghosts
 	let ai = 0; let a = void 0
 	let bi = 0; let b = void 0
@@ -34,23 +34,21 @@ const arrayDeltaActions = ({move, add, remove})=> (as, bs)=> {
 			if (found) {
 				const at = {abs: ai, rel: ai + offset}
 				const fr = {abs: i, rel: i + offset - skipped, x: as[i]}
-				move(at, fr)
+				yield {move: true, at, fr}
 				gs[i] = true
 				offset++
 			} else {
 				const at = {abs: ai, rel: ai + offset}
 				const x = {x: b, i: bi}
-				add(at, x)
+				yield {add: true, at, x}
 				offset++
 			}
 			bi++
 		} else {
 			const at = {abs: ai, rel: ai + offset, x: a}
-			remove(at)
+			yield {remove: true, at}
 			offset--
 			ai++
 		}
 	} while (true) // eslint-disable-line no-constant-condition
 }
-
-export default arrayDeltaActions
