@@ -14,7 +14,7 @@ export default class Lazy {
 
 	map (callback) { return new LazyMap(this, callback) }
 	
-	takeAll () { return [...this] }
+	takeAll () { return [...this] } // last {value: x, done: true} (eg. return x), is excluded
 	take (n) {
 		const xs = []
 		for (let i=0; i < n; i++) xs.push(this.next().value)
@@ -25,6 +25,7 @@ export default class Lazy {
 
 	* [Symbol.iterator] () {
 		let v; while (!(v = this.next()).done) yield v.value
+		return v.value
 	}
 }
 
@@ -42,6 +43,6 @@ class LazyFilter extends Lazy {
 class LazyMap extends Lazy {
 	next () {
 		const item = this.iterable.next()
-		return { value: item.done? null: this.callback(item.value), done: item.done }
+		return { value: item.done? item.value: this.callback(item.value), done: item.done }
 	}
 }

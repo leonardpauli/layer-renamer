@@ -5,7 +5,7 @@
 // copyright © Leonard Pauli 2017-2018
 
 import {layerKindGet} from './layers'
-import findLayersUsingRelativePath from './findLayersUsingRelativePath'
+import findLayersUsingRelativePath, {parseRelativePathStrPart} from './findLayersUsingRelativePath'
 
 
 const evaluateExpressionStrRaw = ({expressionStr, layer, matches, selectionCount, index}, {layerKindName} = {})=> {
@@ -58,7 +58,9 @@ const substituteLayerExpressionFlags = ({expression, layer, quoteStrings, select
 		if (escaped) return '%'
 		let lyr = layer
 		if (useRelativePath) {
-			const layers = findLayersUsingRelativePath([layer], useRelativePath.replace(/p/ig, '<'))
+			const {path, restStr} = parseRelativePathStrPart(useRelativePath.replace(/^:/ig, '').replace(/p/ig, '<'))
+			// TODO: handle restStr
+			const layers = findLayersUsingRelativePath([layer], path)
 			if (!layers.length) return quoteStrings?null:'?'
 			lyr = layers[0]
 		}

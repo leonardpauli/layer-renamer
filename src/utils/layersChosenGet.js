@@ -5,7 +5,7 @@
 // copyright © Leonard Pauli 2018
 
 import {evaluateExpressionStrRaw} from './evaluateExpressionStr'
-import findLayersUsingRelativePath from './findLayersUsingRelativePath'
+import findLayersUsingRelativePath, {parseRelativePathStrPart} from './findLayersUsingRelativePath'
 import {layerKindGet} from './layers'
 import {dlog, regexEscape} from './misc'
 import config from '../config'
@@ -55,9 +55,12 @@ export default ({
 
 	if (err) return {err, layers: filteredLayers}
 
-	const choosenLayers = !relativePath? filteredLayers:
-		findLayersUsingRelativePath(filteredLayers, relativePath)
-
+	const {path: relPath, restStr: relPathRestStr} = parseRelativePathStrPart(relativePath || '')
+	// TODO: handle relPathRestStr + rename to relativePathStr etc
+	const choosenLayers = relativePath && relPath.length
+		? findLayersUsingRelativePath(filteredLayers, relPath)
+		: filteredLayers
+		
 	return {layers: choosenLayers}
 }
 

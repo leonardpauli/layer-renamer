@@ -57,11 +57,13 @@ const layerUpdate = (context, layersLookupTable)=> (id, fields)=> {
 		let action = 'set'
 		let value = fields[key]
 		if (key==='children') {
-			const diff = []; arrayDeltaActions({
-				add: (i, x)=> diff.push({action: 'insert', at: i.rel, value: x.x}),
-				move: (i, f)=> diff.push({action: 'move', fromAt: f.rel, toAt: i.rel}),
-				remove: i=> diff.push({action: 'remove', at: i.rel}),
-			})(json[key], value)
+			const diff = [...arrayDeltaActions(json[key], value)]
+				.map(({add, x, move, fr: f, at: i})=>
+					add? {action: 'add', at: i.rel, value: x.x}
+						: move? {action: 'move', at: i.rel, from: f.rel}
+							: {action: 'remove', at: i.rel}
+				)
+
 			for (let i = 0; i < diff.length; i++) {
 				const {err} = updateDelta({id, key, ...diff[i]})
 				if (err) return {err}
