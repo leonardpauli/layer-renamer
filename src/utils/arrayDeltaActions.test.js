@@ -19,7 +19,7 @@ const arrayShuffle = xs=> {
 
 const rndstr = ()=> (s=>	arrayShuffle(s.split('')).join('')
 	.substr(0, Math.floor(Math.random()*s.length))
-)('abcd') // efghijklmnopqrstuvwxyz
+)('abcdefghijklmnopqrstuvwxyz')
 
 describe('arrayDeltaActions', ()=> {
 	const diffit = (expr, name, doLog)=> {
@@ -75,15 +75,15 @@ describe('arrayDeltaActions', ()=> {
 	adc
 	*/
 
-	// diffit('bcd,dc', 'move, add, and remove', true)
+	diffit('bcd,dc', 'move, add, and remove', true)
 
-	// diffit(`${rndstr()},${rndstr()}`, 'random')
-	// diffit(`${rndstr()},${rndstr()}`, 'random')
-	// diffit(`${rndstr()},${rndstr()}`, 'random')
-	// diffit(`${rndstr()},${rndstr()}`, 'random')
-	// diffit(`${rndstr()},${rndstr()}`, 'random')
-	// diffit(`${rndstr()},${rndstr()}`, 'random')
-	// diffit(`${rndstr()},${rndstr()}`, 'random')
-	// diffit(`${rndstr()},${rndstr()}`, 'random')
-	// diffit(`${rndstr()},${rndstr()}`, 'random')
+	diffit(`${rndstr()},${rndstr()}`, 'random')
+	diffit(`${rndstr()},${rndstr()}`, 'random')
+	diffit(`${rndstr()},${rndstr()}`, 'random')
+	diffit(`${rndstr()},${rndstr()}`, 'random')
+	diffit(`${rndstr()},${rndstr()}`, 'random')
+	diffit(`${rndstr()},${rndstr()}`, 'random')
+	diffit(`${rndstr()},${rndstr()}`, 'random')
+	diffit(`${rndstr()},${rndstr()}`, 'random')
+	diffit(`${rndstr()},${rndstr()}`, 'random')
 })
