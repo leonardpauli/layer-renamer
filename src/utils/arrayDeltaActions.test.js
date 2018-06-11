@@ -6,7 +6,6 @@
 
 import arrayDeltaActions from './arrayDeltaActions'
 import {log} from 'string-from-object'
-import LazyIterable from './LazyIterable'
 
 
 // https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
@@ -31,13 +30,14 @@ describe('arrayDeltaActions', ()=> {
 		const bs = bb.split('')
 		const rs = as.slice()
 		
-		const diff = new LazyIterable(arrayDeltaActions(as, bs))
-			.filter(({add, x, move, fr: f, at: i})=>
-				add? rs.splice(i.rel, 0, bs[x.i])
-					: move? (rs.splice(i.rel, 0, rs[f.rel]), rs.splice(f.rel+1, 1))
-						: rs.splice(i.rel, 1), true // remove, don't filter out
-			)
-			.takeAll()
+		// const diff = [...arrayDeltaActions(as, bs)]; diff.forEach(...)
+		// alt: diff = new LazyIterator(arrayDeltaActions(as, bs)).map/filter(...).takeAll()
+		const diff = [...arrayDeltaActions(as, bs)]
+		diff.forEach(({add, x, move, fr: f, at: i})=>
+			add? rs.splice(i.rel, 0, bs[x.i])
+				: move? (rs.splice(i.rel, 0, rs[f.rel]), rs.splice(f.rel+1, 1))
+					: rs.splice(i.rel, 1) // remove, don't filter out
+		)
 
 		doLog && log(diff.map(({add, x, move, fr: f, at: i})=>
 			add? `add '${x.x}' (bs[${x.i}]) at r[${i.rel}] (final[${i.abs}])`
