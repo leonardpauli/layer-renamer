@@ -5,6 +5,15 @@
 - update
 	// - change structure of prev LayerRenamer + merge in
 	// - add as submodule to lpdocs
+	// - arrayDeltaActions
+		// - create
+		// - test
+	- findLayersUsingRelativePath
+		// - refactor
+		- test js
+		- test sketch integration
+	- simple layer wrapper..?
+
 	- select
 		- create layerQuery
 			- layersLookupTable<id: layerRef>

@@ -9,9 +9,9 @@ import findLayersUsingRelativePath, {parseRelativePathStrPart} from './findLayer
 
 
 const evaluateExpressionStrRaw = ({expressionStr, layer, matches, selectionCount, index}, {layerKindName} = {})=> {
-	const matchesEvalPrepared = matches.map(match=> !match ? 'null':
-		!isNaN(parseFloat(match))? parseFloat(match):
-			`"${match}"`)
+	const matchesEvalPrepared = matches.map(match=> !match ? 'null'
+		: !isNaN(parseFloat(match))? parseFloat(match)
+		: `"${match}"`)
 
 	const expression = substituteCaptureGroupRefs(matchesEvalPrepared)(substituteLayerExpressionFlags({
 		expression: expressionStr,
