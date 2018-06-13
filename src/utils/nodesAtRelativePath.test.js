@@ -5,7 +5,7 @@
 // copyright © Leonard Pauli 2018
 
 import nodesAtRelativePath, {parseRelativePathStrPart} from './nodesAtRelativePath'
-import {log} from 'string-from-object'
+import sfo, {log} from 'string-from-object'
 
 // TODO:
 // >* // select all children of parent recursively
@@ -13,7 +13,8 @@ import {log} from 'string-from-object'
 // 1,3 // select at idx 1 and 3 of selected
 // 1-3 // select at idx 1 to 3 of selected
 
-const debug = true
+// TODO: 2n should be "select every x:th of selected" + "IN EACH PARENT separately"
+
 
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
 const range = n=> Array(n || 0).fill().map((_, i)=> i)
@@ -97,39 +98,51 @@ const nodeGet = (depths = [0], depthMax = 3, siblingsMax = 4)=> ({
 		: [],
 })
 const topNodes = range(7).map(i=> nodeGet([i]))
+const rootNode = {nodes: topNodes, isRootNode: true, title: 'root'}
+const parentGet = n=> {
+	const components = n.title.split('.')
+	components.pop()
+	let next
+	let node = rootNode
+	if (!components.length) return node
+	while (next = parseInt(components.shift(), 10), !isNaN(next))
+		node = node.nodes[next]
+	return node
+}
 
 // log(topNodes, 7)
 // log(tests.reduce((o, {pathStr, titles})=> (o[pathStr] = titles, o), {}), 2)
 // log(tests)
 
 describe('nodesAtRelativePath', ()=> {
-	const testit = (title, path, titles)=> it(title, ()=> {
-		const rootNode = {nodes: topNodes, isRootNode: true, title: 'root'}
+	const toMatchTitles = ({path, titles})=> {
 		const res = nodesAtRelativePath({
 			roots: topNodes,
 			path,
-			parentGet: n=> {
-				const components = n.title.split('.')
-				components.pop()
-				let next
-				let node = rootNode
-				if (!components.length) return node
-				while (next = parseInt(components.shift(), 10), !isNaN(next))
-					node = node.nodes[next]
-				return node
-			},
-			childrenGet: n=> n.nodes,
+			parentGet, childrenGet: n=> n.nodes,
 		})
+
+		const result = res.map(n=> n.title)
 		try {
-			expect(res.map(n=> n.title)).toEqual(titles)
+			expect(result).toEqual(titles)
+			return {result, pass: true}
 		} catch (err) {
-			if (debug) log({
-				title, path,
-				titles,
-				return: res.map(n=> n.title),
-			}); else throw err
+			return {result, pass: false, err}
 		}
-	})
+	}
+
+	expect.extend({toMatchTitles (path, titles) {
+		const {pass, result} = toMatchTitles({path, titles})
+		return {pass, message: ()=> sfo({
+			message: pass
+				? 'expected result not to match titles'
+				: 'expected result to match titles',
+			path, titles, result,
+		}, {depth: 5, colors: true, indentation: '\t'})}
+	}})
+
+	const testit = (title, path, titles)=>
+		it(title, ()=> expect(path).toMatchTitles(titles))
 
 	describe('isolated on topNodes', ()=> {
 		tests.map(({pathStr, desc, path, titles})=>
