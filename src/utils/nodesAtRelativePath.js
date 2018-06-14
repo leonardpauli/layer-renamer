@@ -5,11 +5,14 @@
 // copyright © Leonard Pauli 2018
 import {log} from 'string-from-object'
 
-const nodesAtRelativePath = ({
-	roots,
-	path: [path, ...restPath],
-	parentGet,
-	childrenGet,
+// TODO: if path: [some, null, some...] is provided, it will stop at null
+
+const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
+
+// nodesAtRelativePathStep :: [n] -> [n]
+const nodesAtRelativePathStep = ({
+	roots, path,
+	parentGet, childrenGet,
 })=> {
 	if (!path) return roots
 	const xs = []
@@ -38,8 +41,59 @@ const nodesAtRelativePath = ({
 			})
 	} else throw new Error(`Path "${path}" isn't valid`)
 
-	return !restPath.length? xs: nodesAtRelativePath({
-		roots: xs, path: restPath, parentGet, childrenGet})
+	return xs
+}
+
+// nodesAtRelativePathGrouped :: [n] -> [[n]]
+const nodesAtRelativePathGrouped = ({
+	roots, path,
+	parentGet, childrenGet,
+})=> {
+	let gs = [roots] // [n] -> [[n]]
+	
+	const unique = xs=> [...new Set(xs)]
+	const regroupByParents = ()=> {
+		const attachParents = ns=> ns.map(n=> [parentGet(n), n]) // [[n]] -> [[(parent, n)]]
+		const os = concat(gs.map(unique).map(attachParents))
+		const parents = []
+		// log({gs}, 3, {singlelineLengthMax: 130, nameExtractor: o=> o && o.title})
+		gs = []
+		os.forEach(([parent, n])=> {
+			// log({parent}, 2)
+			const idx = parents.indexOf(parent)
+			if (idx==-1) {
+				parents.push(parent)
+				gs.push([n])
+				return
+			}
+			gs[idx].push(n)
+		})
+		gs = gs.map(unique)
+		// log({gs}, 3, {singlelineLengthMax: 130, nameExtractor: o=> o && o.title})
+	}
+
+	let step; let restPath = path
+	while ([step, ...restPath] = restPath, step) {
+		const individually = step.down
+		// const singleGroup = step.up
+		// [[n]] -> [[n]]
+		// gs = singleGroup ? [concat(gs)] : gs
+		gs = individually ? concat(gs).map(n=> [n]) : gs
+		// eslint-disable-next-line no-loop-func
+		gs = gs.map(ns=> nodesAtRelativePathStep({
+			roots: ns, path: step,
+			parentGet, childrenGet,
+		}))
+		step.up && regroupByParents()
+		// log({step, gs}, 3, {singlelineLengthMax: 130, nameExtractor: o=> o && o.title})
+	}
+	return gs
+}
+
+// nodesAtRelativePath :: [n] -> [n]
+const nodesAtRelativePath = opt=> {
+	const res = nodesAtRelativePathGrouped(opt)
+	return [...new Set(concat(res))] // get unique
 }
 
 export default nodesAtRelativePath

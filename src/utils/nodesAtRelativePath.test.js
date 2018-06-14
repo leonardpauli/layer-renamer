@@ -115,14 +115,14 @@ const parentGet = n=> {
 // log(tests)
 
 describe('nodesAtRelativePath', ()=> {
-	const toMatchTitles = ({path, titles})=> {
-		const res = nodesAtRelativePath({
-			roots: topNodes,
-			path,
-			parentGet, childrenGet: n=> n.nodes,
-		})
+	const getTitlesFromPath = path=> nodesAtRelativePath({
+		roots: topNodes,
+		path,
+		parentGet, childrenGet: n=> n.nodes,
+	}).map(n=> n.title)
 
-		const result = res.map(n=> n.title)
+	const toMatchTitles = ({path, titles})=> {
+		const result = getTitlesFromPath(path)
 		try {
 			expect(result).toEqual(titles)
 			return {result, pass: true}
@@ -141,22 +141,39 @@ describe('nodesAtRelativePath', ()=> {
 		}, {depth: 5, colors: true, indentation: '\t'})}
 	}})
 
-	const testit = (title, path, titles)=>
-		it(title, ()=> expect(path).toMatchTitles(titles))
+	const testit = (title, path, titles, _it = it)=>
+		_it(title, ()=> expect(path).toMatchTitles(titles))
 
 	describe('isolated on topNodes', ()=> {
 		tests.map(({pathStr, desc, path, titles})=>
 			testit(`${pathStr}\t // ${desc}`, path, titles))
 	})
 
-	const strit = (str, titles)=>
-		testit(str, parseRelativePathStrPart(str).path, titles)
+	const strit = (str, titles, _it = it)=>
+		testit(str, parseRelativePathStrPart(str).path, titles, _it)
+	strit.only = (str, titles)=> strit(str, titles, it.only)
 
 	describe('combined', ()=> {
 		strit('0>', range(4).map(i=> `0.${i}`))
 		strit('<<<', ['root'])
-		strit('>0', ['0.0', '1.0', '...'])
-		// strit('>0>1<1>2n', ['root'])
+		strit('2', ['2'])
+		strit('2>', ['2.0', '2.1', '2.2', '2.3'])
+		strit('2>0', ['2.0'])
+		strit('2>>', [
+			'2.0.0', '2.0.1', '2.0.2', '2.0.3',
+			'2.1.0', '2.1.1', '2.1.2', '2.1.3',
+			'2.2.0', '2.2.1', '2.2.2', '2.2.3',
+			'2.3.0', '2.3.1', '2.3.2', '2.3.3',
+		])
+		strit('>0', range(7).map(i=> `${i}.0`))
+		strit('>0>1', range(7).map(i=> `${i}.0.1`))
+		
+		strit('', range(7).map(i=> `${i}`))
+		strit('><', range(7).map(i=> `${i}`))
+		strit('><2', ['2'])
+
+		strit('>0>1<>2n', getTitlesFromPath(parseRelativePathStrPart('>0>2n').path))
+		strit('>0>1<<2n', getTitlesFromPath(parseRelativePathStrPart('2n').path))
 	})
 
 })
