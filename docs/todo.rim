@@ -10,7 +10,9 @@
 		// - test
 	- findLayersUsingRelativePath
 		// - refactor
-		- test js
+		// - test js
+			// - parseRelativePathStrPart
+			// - nodesAtRelativePath
 		- test sketch integration
 	- simple layer wrapper..?
 

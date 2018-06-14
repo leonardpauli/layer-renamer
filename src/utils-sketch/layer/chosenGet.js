@@ -4,11 +4,12 @@
 // created by Leonard Pauli, jun 2018
 // copyright © Leonard Pauli 2018
 
-import {evaluateExpressionStrRaw} from './evaluateExpressionStr'
-import findLayersUsingRelativePath, {parseRelativePathStrPart} from './findLayersUsingRelativePath'
-import {layerKindGet} from './layers'
-import {dlog, regexEscape} from './misc'
-import config from '../config'
+import {evaluateExpressionStrRaw} from '../evaluateExpressionStr'
+import layersFindUsingRelativePath, {parseRelativePathStrPart} from './findUsingRelativePath'
+import {layerKindGet} from './misc'
+import {regexEscape} from '../../utils/misc'
+import {dlog} from '../misc'
+import config from '../../config'
 
 
 // layersChosenGet
@@ -58,7 +59,7 @@ export default ({
 	const {path: relPath, restStr: relPathRestStr} = parseRelativePathStrPart(relativePath || '')
 	// TODO: handle relPathRestStr + rename to relativePathStr etc
 	const choosenLayers = relativePath && relPath.length
-		? findLayersUsingRelativePath(filteredLayers, relPath)
+		? layersFindUsingRelativePath(filteredLayers, relPath)
 		: filteredLayers
 		
 	return {layers: choosenLayers}

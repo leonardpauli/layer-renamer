@@ -1,10 +1,10 @@
-// layerQuery.js
+// layer/query.js
 // LayerRenamer
 //
 // created by Leonard Pauli, jun 2018
 // copyright © Leonard Pauli 2018
 
-import {layerKindGet} from './layers'
+import {layerKindGet} from './misc'
 
 
 const layerQuery = (context, layersLookupTable)=> (id, query)=> {

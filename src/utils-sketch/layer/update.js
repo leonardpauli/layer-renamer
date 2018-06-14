@@ -1,12 +1,12 @@
-// layerQuery.js
+// layer/update.js
 // LayerRenamer
 //
 // created by Leonard Pauli, jun 2018
 // copyright © Leonard Pauli 2018
 
-import {layerKindGet} from './layers'
-import layerQuery from './layerQuery'
-import arrayDeltaActions from './arrayDeltaActions'
+import {layerKindGet} from './misc'
+import layerQuery from './query'
+import arrayDeltaActions from '../../utils/arrayDeltaActions'
 
 const rndstr = ()=> Math.random().toString(32).substr(2, 8)
 

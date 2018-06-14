@@ -10,7 +10,7 @@ import UI from 'sketch/ui'
 import mainWindow from './mainWindow'
 import outlineFromSelectionAsString from './actions/outlineFromSelectionAsString'
 import selectFn from './actions/select'
-import {logd} from './utils/misc'
+import {logd} from './utils-sketch/misc'
 
 export default context=> UI.message(0+' start')
 

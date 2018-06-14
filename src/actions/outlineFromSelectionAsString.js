@@ -4,7 +4,7 @@
 // created by Leonard Pauli, jan 2017 + jun 2018
 // copyright © Leonard Pauli 2017-2018
 
-import {layerKindGet} from '../utils/layers'
+import {layerKindGet} from '../utils-sketch/layer/misc'
 
 
 /*

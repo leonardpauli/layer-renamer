@@ -1,4 +1,4 @@
-// layer.js
+// layer/misc.js
 // LayerRenamer
 //
 // created by Leonard Pauli, jan 2017 + jun 2018

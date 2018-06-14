@@ -4,8 +4,8 @@
 // created by Leonard Pauli, jan 2017
 // copyright © Leonard Pauli 2017-2018
 
-import { layersSelect } from '../utils/layers'
-import layersChosenGet from '../utils/layersChosenGet'
+import { layersSelect } from '../utils-sketch/layer/misc'
+import layersChosenGet from '../utils-sketch/layer/chosenGet'
 
 /*
 	const alert = showAlert({

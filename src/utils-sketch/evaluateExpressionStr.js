@@ -4,8 +4,8 @@
 // created by Leonard Pauli, jan 2017 + jun 2018
 // copyright © Leonard Pauli 2017-2018
 
-import {layerKindGet} from './layers'
-import findLayersUsingRelativePath, {parseRelativePathStrPart} from './findLayersUsingRelativePath'
+import {layerKindGet} from './layer/misc'
+import findLayersUsingRelativePath, {parseRelativePathStrPart} from './layer/findUsingRelativePath'
 
 
 const evaluateExpressionStrRaw = ({expressionStr, layer, matches, selectionCount, index}, {layerKindName} = {})=> {

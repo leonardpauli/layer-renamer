@@ -6,7 +6,9 @@
 
 /* eslint-disable */
 
-import {replaceLayerExpressionFlags, transformStringCaseUsingFlags} from './custom-utils'
+import {transformStringCaseUsingFlags} from '../utils/misc'
+// import {replaceLayerExpressionFlags} from './custom-utils'
+const replaceLayerExpressionFlags = ()=> void 0
 
 const layerRenamerRename = context=> {
 	const doc = context.document

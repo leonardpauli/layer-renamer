@@ -1,12 +1,12 @@
-// findLayersUsingRelativePath.js
+// layer/findUsingRelativePath.js
 // LayerRenamer
 //
 // created by Leonard Pauli, jan 2017 + jun 2018
 // copyright © Leonard Pauli 2017-2018
 
-import nodesAtRelativePath, {parseRelativePathStrPart} from './nodesAtRelativePath'
+import nodesAtRelativePath, {parseRelativePathStrPart} from '../../utils/nodesAtRelativePath'
 
-const findLayersUsingRelativePath = (baseLayers, path, {
+const layersFindUsingRelativePath = (baseLayers, path, {
 	parentGet = l=> l.parentGroup && l.parentGroup(),
 	childrenGet = l=> l.layers && l.layers(),
 } = {})=> nodesAtRelativePath({
@@ -14,5 +14,5 @@ const findLayersUsingRelativePath = (baseLayers, path, {
 })
 
 
-export default findLayersUsingRelativePath
+export default layersFindUsingRelativePath
 export {parseRelativePathStrPart}
