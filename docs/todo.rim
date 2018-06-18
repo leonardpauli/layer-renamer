@@ -2,19 +2,65 @@
 ' LeonardPauli/layer-renamer, sketch plugin
 	Created by Leonard Pauli, 6 jun 2018
 
+' expression notes
+	// all: "<*>*" // nah
+	// selected: ""
+	// inside selected: ">*"
+	:(fill=red) => :(fill.0=red.threshold(10%))
+	hello (.*)! => :/hello (.*)!/rig // (initially using default flags) r-egex (otherwise plain text match), i-gnoreCase, g-lobal
+	:: => : // escape colon separator
+	:>0>2n+1 // path
+	hello (.*)!:>0:/bg/:(fill=red, hidden=false):+1
+	then, in replace; $1 = \(.0.1) = first group in first search regex
+		\(.1.0) would be the resulting node from ":>0"
+		\(.3) would be list of the ones matching filter/query
+		\(.4) would be list of the ones resulting from ":+1"
+		eg. \(.3.0.border.0.fill) or \(.4.0.title)
+		eg. \(.path(">0").0.title)
+
+
+- create nodesFindUsingPathExpression.js // in utils/
+	taking parentGet, childrenGet, titleGet?, initial regex default flags, (expression evaluator propertiesGet)?
+- create nodesFindUsingPathExpression.test.js
+	test for simple path
+	test for simple text
+	test for simple text + simple path
+	test for simple text + simple path + simple text + ...
+	test for regex
+	test for simple expression
+- fix layer/query
+	- create layer wrapper?
+		- test with sketch
+	- create layer wrapper mock for testing
+	- test query using layer wrapper mock
+	- test nodesFindUsingPathExpression with query with layer wrapper mock
+	- test query with sketch
+	- test nodesFindUsingPathExpression with query with sketch
+	search functionallity pretty much done, on to UI!
+
+
 - update
 	// - change structure of prev LayerRenamer + merge in
 	// - add as submodule to lpdocs
 	// - arrayDeltaActions
 		// - create
 		// - test
-	- findLayersUsingRelativePath
-		// - refactor
-		// - test js
-			// - parseRelativePathStrPart
-			// - nodesAtRelativePath
+	- nodesFindUsingPathExpression
+		// - relativePath // -> findLayersUsingRelativePath
+			// - refactor
+			// - test js
+				// - parseRelativePathStrPart
+				// - nodesAtRelativePath
+		- string/regex
+			- simple test
+		- filter MVP
+			- simple test
+		- combined path expression
+			- keep part results // eg. regex groups / (path traversal, filter) resulting nodes
+			- simple test
 		- test sketch integration
-	- simple layer wrapper..?
+			- layersFindUsingPathExpression
+			- simple layer wrapper..?
 
 	- select
 		- create layerQuery
