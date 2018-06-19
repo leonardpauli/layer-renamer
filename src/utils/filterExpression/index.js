@@ -93,15 +93,27 @@ export const parseStrNext = (ctx, _str)=> {
 		// block.matched // already set in loop
 		block.tokens = block.matched? concat(block.lexems.map(l=> l.tokens || [])): []
 		blocks.pop(); blockis.pop(); blocksi-- // remove current block
+		// log({a: 'doneWithLexems', block}, 3)
+		
 		doneWithLexemBefore()
+
 		const repeatLexemOptionally = block.matched && block.repeat
 		if (repeatLexemOptionally) {
 			blocks[blocksi].lexems.splice(blockis[blocksi], 0, {
 				...block, tokens: void 0, matched: void 0, optional: true})
-		}
+		} else blocks.length && handleMatch(blocks[blocks.length-1], block) // TODO: correct to check blocks.length?
 	}
 	const doneWithLexemBefore = ()=> {
 		blockis[blocksi]++ // do next step on block
+	}
+	const handleMatch = (block, lexem)=> {
+		const doneWithLexems = lexem.matched
+			? block.usingOr
+			: !block.usingOr && !lexem.optional
+		if (doneWithLexems) {
+			block.matched = lexem.matched
+			doneWithLexemsBefore(block)
+		} else doneWithLexemBefore()
 	}
 	const safeToYieldGet = ()=> !blocks
 		.filter((v, i)=> i <= blocksi)
@@ -124,6 +136,7 @@ export const parseStrNext = (ctx, _str)=> {
 			`blocksi > blockis.length (${blocksi} > ${blockis.length})`)
 		const blocki = blockis[blocksi]
 
+		// log({block}, 3, {alignValuesLeftColumnMinWidth: 30})
 		const {lexems} = block
 		const doneWithLexems0 = blocki == lexems.length
 		if (doneWithLexems0) {
@@ -133,6 +146,7 @@ export const parseStrNext = (ctx, _str)=> {
 		const lexem = lexems[blocki]
 		// log({lexem, lexems, blocki})
 		if (lexem.lexems) { // create block
+			// log({pushed: lexem}, 2)
 			blocks.push(lexem); blocksi++
 			continue
 		}
@@ -143,16 +157,7 @@ export const parseStrNext = (ctx, _str)=> {
 		const match = str.match(lexem.regex)
 		if (!match) {
 			lexem.matched = false
-
-			const doneWithLexems1 = usingAnd && !lexem.optional
-			if (doneWithLexems1) {
-				block.matched = false
-				doneWithLexemsBefore(block)
-				continue
-			}
-
-			doneWithLexemBefore()
-			continue
+			handleMatch(block, lexem); continue
 		}
 
 		lexem.tokens = [{match, lexem}]
@@ -164,15 +169,7 @@ export const parseStrNext = (ctx, _str)=> {
 		const restStr = str.substr(retainLength)
 		str = restStr
 
-		const doneWithLexems2 = usingOr
-		if (doneWithLexems2) {
-			block.matched = true
-			doneWithLexemsBefore(block)
-			continue
-		}
-
-		doneWithLexemBefore()
-		continue
+		handleMatch(block, lexem); continue
 	}
 
 	return ctx.lexem.tokens
