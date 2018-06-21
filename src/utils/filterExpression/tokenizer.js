@@ -23,7 +23,7 @@ export const tokenize = function* tokenize (ctx, str, state = {}) {
 	return state.restStr
 }
 
-
+export const config = {tokenizeNextMaxIterations: 100000}
 // eslint-disable-next-line max-statements
 export const tokenizeNext = (ctx, str)=> { // ctx = {lexem}
 	// assumes ctx.lexem has gone through lexemUtils.expand for validation etc
@@ -47,11 +47,11 @@ export const tokenizeNext = (ctx, str)=> { // ctx = {lexem}
 	const bs = [baseLexem]
 	const lis = []
 
-	// let cntr = 0
+	let cntr = 0
 	while (bs.length > 0) {
-		// cntr++
-		// if (cntr>100) throw new Error(
-		// 	`tokenizeNext got cntr = ${cntr}, please increase or check for issues`)
+		cntr++
+		if (cntr>=config.tokenizeNextMaxIterations) throw new Error( // TODO: remove, shouldn't happen wrongly (check all edge cases)
+			`tokenizeNext got cntr = ${cntr}, please increase config.tokenizeNextMaxIterations or check for issues`)
 
 		// get block
 		const bi = bs.length-1
@@ -174,12 +174,14 @@ const bNextDo = (bs, lis)=> {
 
 	// b.matched // keep it as is, either the default or changed in handleMatch
 	b.tokens = b.matched? concat(b.lexems.slice(0, li+1).map(l=> l.tokens)): []
+	if (b.matched && !b.tokens.length) b.matched = false
 	bs.pop(); lis.pop() // remove current/last b
 	
 	const {repeatShould, bNextDoShould} = bi>0? fixOk(bs[bi-1], b): {}
-
-	// if (repeatShould) lInsertForRepeatOptional(bs, lis, b)
-	// else if (bNextDoShould) { bNextDo(bs, lis); return }
+	
+	// if (repeatShould) log({repeatShould, b})
+	if (repeatShould) lInsertForRepeatOptional(bs, lis, b)
+	else if (bNextDoShould) { bNextDo(bs, lis); return }
 	// log({b}, 3)
 
 	lNextDo(bs, lis)

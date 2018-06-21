@@ -59,9 +59,21 @@ describe('tokenize', ()=> {
 	})
 
 	describe('more', ()=> {
-		it.skip('.raw', ()=> {
+		it('a.aa', ()=> {
 			const ctx = exprCtxDefaultGet()
 			const tokens = tokenizeNext(ctx, 'a.aa')
+			// log({tokens, ctx})
+			// simpleCheck(tokens)
+		})
+		it('(a.aa + y)', ()=> {
+			const ctx = exprCtxDefaultGet()
+			const tokens = tokenizeNext(ctx, '(a.aa + y)')
+			// log({tokens, ctx})
+			// simpleCheck(tokens)
+		})
+		it('"', ()=> {
+			const ctx = exprCtxDefaultGet()
+			const tokens = tokenizeNext(ctx, '"')
 			log({tokens, ctx})
 			// simpleCheck(tokens)
 		})

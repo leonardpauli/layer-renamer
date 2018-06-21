@@ -78,7 +78,7 @@ describe('optional', ()=> {
 			lexems: [{...a, optional}],
 		})); expand(root)
 		
-		testTokensL(root, 'b', [], {matched: true})
+		testTokensL(root, 'b', [], {matched: false})
 		testTokensL(root, 'a', [['a', '@.0', {s: 0, e: 1}]])
 	})
 
@@ -186,7 +186,7 @@ describe('repeat optional', ()=> {
 			lexems: [{...a, repeat, optional}],
 		})); expand(root)
 		
-		testTokensL(root, 'b', [], {matched: true})
+		testTokensL(root, 'b', [], {matched: false})
 		testTokensL(root, 'a', [['a', '@.0', {s: 0, e: 1}]])
 		testTokensL(root, 'aa', [['a', '@.0', {s: 0, e: 1}], ['a', '@.0', {s: 1, e: 2}]])
 	})
@@ -277,7 +277,7 @@ describe('nested', ()=> {
 		})
 	})
 
-	it.skip('((a | b)*, c)', ()=> {
+	it('((a | b)*, c)', ()=> {
 		const root = objr(({a, b, c, inner, outer})=> ({
 			a: {regex: /^a/},
 			b: {regex: /^b/},
@@ -289,15 +289,12 @@ describe('nested', ()=> {
 		
 		testTokensL(root, 'a', [])
 		testTokensL(root, 'b', [])
-		testTokensL(root, 'c', [['c']])
-		testTokensL(root, 'ac', [['a'], ['c']])
-		testTokensL(root, 'bc', [['b'], ['c']])
-		testTokensL(root, 'abc', [['a'], ['b'], ['c']])
-		// testTokensL(root, 'baa', [['b', '@.b', {s: 0, e: 1}]])
-		// testTokensL(root, 'baac', [['b'], ['a'], ['a'], ['c']])
-		// testTokensL(root, 'baac', [['b', '@.b', {s: 0, e: 1}], ['a', '@.a', {s: 1, e: 2}], ['a', '@.a', {s: 2, e: 3}], ['c', '@.c', {s: 3, e: 4}]])
-		// const tokens = tokenizeNext({lexem: root}, 'abbac')
-		// expect(tokens).toHaveLength(5)
+		testTokensS(root, 'c')
+		testTokensS(root, 'ac')
+		testTokensS(root, 'bc')
+		testTokensS(root, 'abc')
+		testTokensS(root, 'baac')
+		testTokensS(root, 'abbac')
 	})
 	
 })

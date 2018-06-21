@@ -12,6 +12,9 @@ import {stupidIterativeObjectDependencyResolve} from '../object'
 import {flags, expand} from './lexemUtils'
 const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
 
+// TODO: fix autoInsertIfNeeded
+// TODO: keep ref to original lexem when adding flags, eg. {extends: someLexem, optional} + reuse its name
+
 
 // lexems definition
 
@@ -19,7 +22,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 	lexems, paren, num, spv, spvo, expr, text, dot, comma, id, ido,
 })=> ({
 	paren: {
-		lexems: [paren.open, spvo, expr, spvo, {...paren.close, autoInsertIfNeeded}],
+		lexems: [paren.open, spvo, expr, spvo, {...paren.close, optional}], // TODO: autoInsertIfNeeded instead
 		open: {regex: /^\(/},
 		close: {regex: /^\)/},
 	},
@@ -50,7 +53,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 		inner: {
 			lexems: [{repeat, optional, usingOr, lexems: [text.raw, text.expr]}],
 		},
-		lexems: [text.open, text.inner, {...text.close, autoInsertIfNeeded}],
+		lexems: [text.open, text.inner, {...text.close, optional}], // TODO: autoInsertIfNeeded instead
 	},
 	dot: {regex: /^\./},
 	comma: {regex: /^,/},
