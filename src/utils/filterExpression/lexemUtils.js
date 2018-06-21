@@ -84,7 +84,9 @@ const _process = (lexem, k, parent=null, state={named: new Set(), noname: new Se
 const recursivelyAddNameToLexems = ([lexem, k, parent])=> lexem.name? null: (
 	lexem.name = (parent && parent.name+'.' || '')+k,
 	lexem.lexems && lexem.lexems.forEach((l, k)=> recursivelyAddNameToLexems([l, k, lexem])))
+
 // TODO: lexemValidateFix(lexem)
+
 export const expand = root=> {
 	const state = {named: new Set(), noname: new Set()}
 	_process(root, '@', null, state)

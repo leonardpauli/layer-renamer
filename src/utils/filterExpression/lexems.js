@@ -19,7 +19,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 	lexems, paren, num, spv, spvo, expr, text, dot, comma, id, ido,
 })=> ({
 	paren: {
-		lexems: [paren.open, spvo, expr, spvo, [paren.close, {autoInsertIfNeeded}]],
+		lexems: [paren.open, spvo, expr, spvo, {...paren.close, autoInsertIfNeeded}],
 		open: {regex: /^\(/},
 		close: {regex: /^\)/},
 	},
