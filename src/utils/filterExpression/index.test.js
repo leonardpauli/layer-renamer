@@ -12,71 +12,45 @@ import {flags} from './lexemUtils'
 
 const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
 
+const testTokenizeStr = (ctx, str, tasexp)=> it(str, ()=> {
+	const tokens = tokenizeNext(ctx, str)
+	const tas = tokens.map(t=> [t.match[0], t.lexem.name])
+	try {
+		expect(tas).toHaveLength(tasexp.length)
+		tas.some((t, i)=> {
+			const [s, name] = tasexp[i]
+			s && expect(t[0]).toBe(s)
+			name && expect(t[1]).toBe(name)
+			return false
+		})
+		expect(tas).toEqual(tasexp)
+	} catch (err) { log(tas); throw err }
+})
+
 
 describe('tokenize', ()=> {
-	it('.num', ()=> {
-		const tokens = tokenizeNext(exprCtxDefaultGet(), '66')
-		// log(tokens)
-		expect(tokens).toHaveLength(1)
-		expect(tokens[0].lexem.name).toBe('@.num')
-		expect(tokens[0].match[0]).toBe('66')
-	})
-	describe('.id', ()=> {
-		const simpleCheck = tokens=> {
-			expect(tokens).toHaveLength(1)
-			expect(tokens[0].lexem.name).toBe('@.id')
-			expect(tokens[0].match[0]).toBe('haa')
-		}
-		it('directly', ()=> {
-			const tokens = tokenizeNext({lexem: {lexems: [lexems.id.strip]}}, 'haa'); simpleCheck(tokens)
-		})
-		it('using .expr', ()=> {
-			const ctx = exprCtxDefaultGet()
-			const tokens = tokenizeNext(ctx, 'haa')
-			// log({tokens, ctx})
-			simpleCheck(tokens)
-		})
-	})
-	describe('.text', ()=> {
-		it('.raw', ()=> {
-			const tokens = tokenizeNext({lexem: {lexems: [lexems.text.raw]}}, 'haa')
-			expect(tokens).toHaveLength(1)
-			expect(tokens[0].lexem.name).toBe('@.text.raw')
-			expect(tokens[0].match[0]).toBe('haa')
-		})
-		// text.expr.lexems = [text.expr.open, expr]
-		// text.inner.lexems = [{repeat, optional, usingOr, lexems: [text.raw, text.expr]}]
-		// text.lexems = [text.open, text.inner, {...text.close, autoInsertIfNeeded}]
-		it('.raw .inner ex', ()=> {
-			const inner = {name: '.inner.ex'}
-			// repeat, optional, usingOr,
-			inner.lexems = [{lexems: [lexems.text.raw]}] // , lexems.text.expr
-			const tokens = tokenizeNext({lexem: inner}, 'haa')
-			expect(tokens).toHaveLength(1)
-			expect(tokens[0].lexem.name).toBe('@.text.raw')
-			expect(tokens[0].match[0]).toBe('haa')
-		})
+	describe('minor', ()=> {
+		testTokenizeStr(exprCtxDefaultGet(), '66', [['66', '@.num']])
+		testTokenizeStr({lexem: {lexems: [lexems.id.strip]}}, 'haa', [['haa', '@.id']])
+		testTokenizeStr(exprCtxDefaultGet(), 'haa', [['haa', '@.id']])
+		testTokenizeStr({lexem: {lexems: [lexems.text.raw]}}, 'haa', [['haa', '@.text.raw']])
 	})
 
 	describe('more', ()=> {
-		it('a.aa', ()=> {
-			const ctx = exprCtxDefaultGet()
-			const tokens = tokenizeNext(ctx, 'a.aa')
-			// log({tokens, ctx})
-			// simpleCheck(tokens)
-		})
-		it('(a.aa + y)', ()=> {
-			const ctx = exprCtxDefaultGet()
-			const tokens = tokenizeNext(ctx, '(a.aa + y)')
-			// log({tokens, ctx})
-			// simpleCheck(tokens)
-		})
-		it('"asd\\(d)"', ()=> {
-			const ctx = exprCtxDefaultGet()
-			const tokens = tokenizeNext(ctx, '"asd\\(d)"')
-			// log({tokens, ctx})
-			// simpleCheck(tokens)
-		})
+		testTokenizeStr(exprCtxDefaultGet(), 'a.aa', [['a', '@.id'], ['.', '@.dot'], ['aa', '@.id']])
+		testTokenizeStr(exprCtxDefaultGet(), '(a.aa + y)', [
+			['(', '@.paren.open'], ...[
+				['a'], ['.'], ['aa'], [' ', '@.spo'], ['+', '@.id'], [' ', '@.spo'], ['y', '@.id'],
+			], [')', '@.paren.close'],
+		])
+		testTokenizeStr(exprCtxDefaultGet(), '"hello\\(d + "y") there"', [
+			['"', '@.text.open'], ...[
+				['hello', '@.text.raw'], ['\\(', '@.text.expr.open'], ['(', '@.paren.open'], ...[
+					['d', '@.id'], [' '], ['+'], [' '],
+					['"', '@.text.open'], ['y'], ['"', '@.text.close'],
+				], [')', '@.paren.close'], [' there'],
+			], ['"', '@.text.close'],
+		])
 	})
 
 	// it.skip('.text', ()=> {

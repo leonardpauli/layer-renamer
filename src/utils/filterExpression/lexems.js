@@ -19,19 +19,19 @@ const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
 // lexems definition
 
 const root = stupidIterativeObjectDependencyResolve(({
-	lexems, paren, num, spv, spvo, expr, text, dot, comma, id, ido,
+	lexems, paren, num, sp, spo, expr, text, dot, comma, id, ido,
 })=> ({
 	paren: {
-		lexems: [paren.open, spvo, expr, spvo, {...paren.close, optional}], // TODO: autoInsertIfNeeded instead
+		lexems: [paren.open, spo, expr, spo, {...paren.close, optional}], // TODO: autoInsertIfNeeded instead
 		open: {regex: /^\(/},
 		close: {regex: /^\)/},
 	},
 	num: {regex: /^[1-9][0-9]*(\.[0-9]+)?/, description: 'number'},
-	spv: {regex: /^[\t ]+/, description: 'space-vertical (optional for formatting / min 1 req for separation / elastic tab for alignment)'},
-	spvo: {...spv, optional},
+	sp: {regex: /^[\t ]+/, description: 'space-horizontal (optional for formatting / min 1 req for separation / elastic tab for alignment)'},
+	spo: {...sp, optional},
 	expr: {
 		description: 'expression',
-		lexems: [expr.single, {repeat, optional, lexems: [spvo, expr.single]}],
+		lexems: [expr.single, {repeat, optional, lexems: [spo, expr.single]}],
 		single: {
 			usingOr, lexems: [
 				num,
@@ -48,7 +48,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 		raw: {regex: /^(([^\\"]|\\[\\"])+)/},
 		expr: {
 			open: {regex: /^\\\(/, retain: -1},
-			lexems: [text.expr.open, expr],
+			lexems: [text.expr.open, paren],
 		},
 		inner: {
 			repeat, optional, usingOr, lexems: [text.raw, text.expr],
