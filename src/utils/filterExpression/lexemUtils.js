@@ -6,7 +6,7 @@
 //
 // based on rim / towards rim
 
-import {log} from 'string-from-object'
+import sfo, {log} from 'string-from-object'
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
 
 
@@ -27,7 +27,7 @@ export const flags = {
 // lexems example
 const keysMeta = 'name,description'.split(',')
 const keysMatch = 'regex,retain,lexems,usingOr'.split(',')
-const keysTokenizerReserved = 'matched,tokens,match'.split(',')
+const keysTokenizerReserved = 'matched,tokens,match,location'.split(',')
 export const keysReserved = concat([keysMeta, keysMatch, keysTokenizerReserved, Object.keys(flags)])
 
 /*
@@ -49,12 +49,10 @@ const lexemExample = { ...lexemBase, ...lexemMatch, ...flags }
 
 
 // process lexems
-const _process = (lexem, k, parent=null, state={named: new Set(), noname: new Set()})=> {
-	// process meta
-	lexem.name = lexem.name || (parent && parent.name+'.' || '')+k
-	state.named.add(lexem)
+const lexemValidateFix = lexem=> {
+	if (!lexem.name) throw new Error(
+		`lexem(${sfo(lexem, 2)}).name not set`)
 
-	// validate matcher + set defaults
 	if (lexem.regex) {
 		if (!(lexem.regex instanceof RegExp)) throw new Error(
 			`lexem(${lexem.name}).regex (should be) instanceof RegExp (was ${lexem.regex})`)
@@ -63,9 +61,20 @@ const _process = (lexem, k, parent=null, state={named: new Set(), noname: new Se
 		if (!Array.isArray(lexem.lexems)) throw new Error(
 			`lexem(${lexem.name}).lexems has to be array`)
 		lexem.usingOr = lexem.usingOr || false
-		lexem.lexems.forEach((l, k)=> !l.name && state.noname.add([l, k, lexem]))
+		if (lexem.usingOr && lexem.lexems.some(l=> l.optional)) throw new Error(
+			`lexem(${lexem.name}).lexems has one optional, not allowed + ambiguos/doesn't make sense when usingOr`)
 	} else throw new Error(
-		`lexem(${lexem.name}) has to have a matcher (.regex/.lexems/.or)`)
+		`lexem(${lexem.name}) has to have a matcher (.regex/.lexems)`)
+}
+const _process = (lexem, k, parent=null, state={named: new Set(), noname: new Set()})=> {
+	// process meta
+	lexem.name = lexem.name || (parent && parent.name+'.' || '')+k
+	state.named.add(lexem)
+
+	// validate matcher + set defaults
+	lexemValidateFix(lexem)
+	if (lexem.lexems) lexem.lexems.forEach((l, k)=>
+		!l.name && state.noname.add([l, k, lexem]))
 
 	// process children
 	const keysChildren = Object.keys(lexem).filter(k=> !keysReserved.includes(k))
@@ -75,10 +84,10 @@ const _process = (lexem, k, parent=null, state={named: new Set(), noname: new Se
 const recursivelyAddNameToLexems = ([lexem, k, parent])=> lexem.name? null: (
 	lexem.name = (parent && parent.name+'.' || '')+k,
 	lexem.lexems && lexem.lexems.forEach((l, k)=> recursivelyAddNameToLexems([l, k, lexem])))
-
-export const process = root=> {
+// TODO: lexemValidateFix(lexem)
+export const expand = root=> {
 	const state = {named: new Set(), noname: new Set()}
-	_process(root, '', null, state)
+	_process(root, '@', null, state)
 	state.noname.forEach(recursivelyAddNameToLexems)
 	// intermediate lexems = named through recursivelyAddNameToLexems
 	// all lexems = state.named + intermediate lexems

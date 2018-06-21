@@ -16,9 +16,8 @@ const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
 // lexems definition
 
 const root = stupidIterativeObjectDependencyResolve(({
-	lexems, paren, num, spv, spvo, expr, text, dot, comma, id,
+	lexems, paren, num, spv, spvo, expr, text, dot, comma, id, ido,
 })=> ({
-	lexems: [expr],
 	paren: {
 		lexems: [paren.open, spvo, expr, spvo, [paren.close, {autoInsertIfNeeded}]],
 		open: {regex: /^\(/},
@@ -58,16 +57,20 @@ const root = stupidIterativeObjectDependencyResolve(({
 	id: {
 		regex: /^[^ .(){}[\]\n\t"]+/,
 		strip: {
-			usingOr, lexems: [id, {lexems: [{...id, optional}, // abc, .a."b".("b"+c)
+			usingOr, lexems: [id, {lexems: [ido, // abc, .a."b".("b"+c)
 				{lexems: [dot, {usingOr, lexems: [id, text, paren]}], optional, repeat}]}],
 		},
 		special: {
 			regex: /^[-<>=+*/!,]+/, // !%&\/=?^*<>@$§|≈±~–,≤≥•‰≠·
 		},
 	},
-}))
+	ido: {...id, optional},
+	lexems: [expr],
+}), {n: 3})
 
 
 // TODO: expand (fn -> obj, name, validate) + test
+// log(root, 17, {indentation: '  ', nameExtractor: ()=> null})
 expand(root)
+// log(root, {indentation: '  '})
 export default root
