@@ -28,7 +28,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 	spvo: {...spv, optional},
 	expr: {
 		description: 'expression',
-		lexems: [expr.single, {repeat, optional, usingOr, lexems: [spvo, expr.single]}],
+		lexems: [expr.single, {repeat, optional, lexems: [spvo, expr.single]}],
 		single: {
 			usingOr, lexems: [
 				num,

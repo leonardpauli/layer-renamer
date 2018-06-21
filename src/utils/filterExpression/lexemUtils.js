@@ -81,11 +81,13 @@ const _process = (lexem, k, parent=null, state={named: new Set(), noname: new Se
 	keysChildren.forEach(k=> _process(lexem[k], k, lexem, state))
 }
 
-const recursivelyAddNameToLexems = ([lexem, k, parent])=> lexem.name? null: (
-	lexem.name = (parent && parent.name+'.' || '')+k,
-	lexem.lexems && lexem.lexems.forEach((l, k)=> recursivelyAddNameToLexems([l, k, lexem])))
-
-// TODO: lexemValidateFix(lexem)
+const recursivelyAddNameToLexems = ([lexem, k, parent])=> {
+	if (!lexem.name) {
+		lexem.name = (parent && parent.name+'.' || '')+k
+		lexem.lexems && lexem.lexems.forEach((l, k)=> recursivelyAddNameToLexems([l, k, lexem]))
+	}
+	lexemValidateFix(lexem)
+}
 
 export const expand = root=> {
 	const state = {named: new Set(), noname: new Set()}

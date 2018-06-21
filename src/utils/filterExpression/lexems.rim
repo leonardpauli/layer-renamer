@@ -24,7 +24,7 @@ filterExpressionLanguage: "expr"
 		close: /^\)/
 	num: /^[1-9][0-9]*(\.[0-9]+)?/ // 'number'
 	spv: /^[\t ]+/ // space-vertical (optional for formatting / min 1 req for separation / elastic tab for alignment)
-	expr: "expr.single (spv? | expr.single)*" // expression
+	expr: "expr.single (spv? expr.single)*" // expression
 		single: "num | text | paren | id.strip | id.special"
 	text: "text.open text.inner text.close!"
 		open: /^"/
@@ -62,7 +62,7 @@ filterExpressionLanguage is Syntax: expr
 		close: /^\)/
 	num: /^[1-9][0-9]*(\.[0-9]+)?/ // 'number'
 	spv: /^[\t ]+/ // space-vertical (optional for formatting / min 1 req for separation / elastic tab for alignment)
-	expr: expr.single, (spv? | expr.single)* // expression
+	expr: expr.single, (spv?, expr.single)* // expression
 		single: num | text | paren | id.strip | id.special
 	text: text.open, text.inner, text.close!
 		open: /^"/

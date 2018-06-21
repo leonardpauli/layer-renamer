@@ -47,8 +47,12 @@ export const tokenizeNext = (ctx, str)=> { // ctx = {lexem}
 	const bs = [baseLexem]
 	const lis = []
 
-
+	// let cntr = 0
 	while (bs.length > 0) {
+		// cntr++
+		// if (cntr>100) throw new Error(
+		// 	`tokenizeNext got cntr = ${cntr}, please increase or check for issues`)
+
 		// get block
 		const bi = bs.length-1
 		if (bi >= bs.length || bi >= lis.length+1) throw new Error( // TODO: shouldn't happen, remove
@@ -97,6 +101,7 @@ export const tokenizeNext = (ctx, str)=> { // ctx = {lexem}
 		// log({al: l})
 		const match = str.substring(l.location.s, l.location.e).match(l.regex)
 		if (!match) {
+			l.location.e = l.location.s
 			l.tokens = []
 			l.matched = false; handleMatch(bs, lis); continue
 		}
@@ -105,6 +110,8 @@ export const tokenizeNext = (ctx, str)=> { // ctx = {lexem}
 				l.retain===true ? match[0].length
 			: l.retain>=0 ? l.retain
 			: Math.max(0, match[0].length + l.retain)
+		if (isNaN(retainLength)) throw new Error(
+			`invalid lexem, forgot to run root through lexemUtils.expand?`)
 		l.location.e = l.location.s + retainLength
 		// log({lo:l.location.s, retainLength, match, r: l.retain})
 
@@ -133,6 +140,8 @@ const handleMatch = (bs, lis)=> {
 	const l = b.lexems[li]
 
 	const {repeatShould, bNextDoShould} = fixOk(b, l)
+	
+	// if (repeatShould) log({repeatShould, b, l}, 2)
 	
 	if (repeatShould) lInsertForRepeatOptional(bs, lis, l)
 	else if (bNextDoShould) { bNextDo(bs, lis); return }
