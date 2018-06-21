@@ -45,13 +45,13 @@ const root = stupidIterativeObjectDependencyResolve(({
 	text: {
 		open: {regex: /^"/},
 		close: {regex: /^"/},
-		raw: {regex: /^(([^\\"]|\\[\\"])*)/},
+		raw: {regex: /^(([^\\"]|\\[\\"])+)/},
 		expr: {
 			open: {regex: /^\\\(/, retain: -1},
 			lexems: [text.expr.open, expr],
 		},
 		inner: {
-			lexems: [{repeat, optional, usingOr, lexems: [text.raw, text.expr]}],
+			repeat, optional, usingOr, lexems: [text.raw, text.expr],
 		},
 		lexems: [text.open, text.inner, {...text.close, optional}], // TODO: autoInsertIfNeeded instead
 	},

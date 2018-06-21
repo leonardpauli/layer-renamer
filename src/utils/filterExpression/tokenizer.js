@@ -50,7 +50,10 @@ export const tokenizeNext = (ctx, str)=> { // ctx = {lexem}
 	let cntr = 0
 	while (bs.length > 0) {
 		cntr++
-		if (cntr>=config.tokenizeNextMaxIterations) throw new Error( // TODO: remove, shouldn't happen wrongly (check all edge cases)
+		// TODO: remove, shouldn't happen wrongly (check all edge cases)
+		// 	if a regex matches zero width, loc.s-loc.e = 0, -> infinite
+		// 	TODO: add regex ''.match(regex) test in lexem validator
+		if (cntr>=config.tokenizeNextMaxIterations) throw new Error(
 			`tokenizeNext got cntr = ${cntr}, please increase config.tokenizeNextMaxIterations or check for issues`)
 
 		// get block

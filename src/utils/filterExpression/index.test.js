@@ -71,10 +71,10 @@ describe('tokenize', ()=> {
 			// log({tokens, ctx})
 			// simpleCheck(tokens)
 		})
-		it('"', ()=> {
+		it('"asd\\(d)"', ()=> {
 			const ctx = exprCtxDefaultGet()
-			const tokens = tokenizeNext(ctx, '"')
-			log({tokens, ctx})
+			const tokens = tokenizeNext(ctx, '"asd\\(d)"')
+			// log({tokens, ctx})
 			// simpleCheck(tokens)
 		})
 	})
