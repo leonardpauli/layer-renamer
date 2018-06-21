@@ -76,103 +76,171 @@ const parseStrCtxGet = (ctx = {})=> ({...exprCtxDefault, ...ctx})
 // 	return {matched, tokens, restStr}
 // }
 
-// TODO: yield tokens when as soon as decided (eg. not inside usingAnd block, or rest is optional)
+
 // eslint-disable-next-line max-statements
-export const parseStrNext = (ctx, _str)=> {
+export const parseStrNext = (ctx, str)=> {
+	// assumes ctx.lexem has gone through lexemUtils.expand for validation etc
 	if (!ctx.lexem.lexems) throw new Error( // TODO: possibly just autowrap if necessary?
 		`parseStrNext: ctx.lexem(${ctx.lexem.name}) has to have .lexems; -> just wrap it {lexems: [<lexem>]}`)
 	if (ctx.lexem.repeat) throw new Error( // TODO: possibly just autowrap if necessary?
 		`parseStrNext: ctx.lexem(${ctx.lexem.name}) can't have .repeat; -> just wrap it {lexems: [<lexem>]}`)
 
-	const blocks = [ctx.lexem]
-	const blockis = []
-	let blocksi = 0
-	let str = _str
+	// b = block, l = lexem, i = index
+	// bs  = [b, b, ...]; b  = bs[bi];  b = [l, l, ...]
+	// lis = [i, i, ...]; li = lis[bi]; l = b[li]
+	// bi = bs.length-1
+	//
+	// b.usingAnd = b.lexems && !b.usingOr
+	//
+	// b.location.(s, e) // start, end; index in str
 
-	const doneWithLexemsBefore = block=> {
-		// block.matched // already set in loop
-		block.tokens = block.matched? concat(block.lexems.map(l=> l.tokens || [])): []
-		blocks.pop(); blockis.pop(); blocksi-- // remove current block
-		// log({a: 'doneWithLexems', block}, 3)
-		
-		doneWithLexemBefore()
+	const baseLexem = ctx.lexem // Beware! mutating // lexemCopyClean1Level(ctx.lexem)
+	baseLexem.location = {s: 0, e: 0}
+	const se = str.length // string end, possibly take from baseLexem.location.e
+	const bs = [baseLexem]
+	const lis = []
 
-		const repeatLexemOptionally = block.matched && block.repeat
-		if (repeatLexemOptionally) {
-			blocks[blocksi].lexems.splice(blockis[blocksi], 0, {
-				...block, tokens: void 0, matched: void 0, optional: true})
-		} else blocks.length && handleMatch(blocks[blocks.length-1], block) // TODO: correct to check blocks.length?
-	}
-	const doneWithLexemBefore = ()=> {
-		blockis[blocksi]++ // do next step on block
-	}
-	const handleMatch = (block, lexem)=> {
-		const doneWithLexems = lexem.matched
-			? block.usingOr
-			: !block.usingOr && !lexem.optional
-		if (doneWithLexems) {
-			block.matched = lexem.matched
-			doneWithLexemsBefore(block)
-		} else doneWithLexemBefore()
-	}
-	const safeToYieldGet = ()=> !blocks
-		.filter((v, i)=> i <= blocksi)
-		.some(b=> !b.usingOr) // TODO: should also be ok if rest lexems in an usingAnd is optional
 
-	while (blocks.length > 0) {
-		if (blocksi >= blocks.length) throw new Error( // TODO: shouldn't happen, remove
-			`blocksi > blocks.length (${blocksi} > ${blocks.length})`)
-		const block = blocks[blocksi] // TODO: will always be last? replace with blocks.length-1?
-		const {usingOr} = block
-		const usingAnd = !usingOr
-		// const safeToYield = safeToYieldGet()
+	while (bs.length > 0) {
+		// get block
+		const bi = bs.length-1
+		if (bi >= bs.length || bi >= lis.length+1) throw new Error( // TODO: shouldn't happen, remove
+			`bi >= bs.length (${bi} >= ${bs.length}) || bi >= lis.length+1`)
+		const b = bs[bi]
 
-		const enteringNextBlock = blocksi == blockis.length
-		if (enteringNextBlock) {
-			blockis.push(0)
-			block.lexems && (block.lexems = block.lexems.map(l=> ({...l, tokens: void 0, matched: void 0}))) // copy lexems for later mod
-			block.lexems && (block.matched = !usingOr) // set matched var default state
-		} else if (blocksi > blockis.length) throw new Error( // TODO: shouldn't happen, remove
-			`blocksi > blockis.length (${blocksi} > ${blockis.length})`)
-		const blocki = blockis[blocksi]
+		// get lexem index + starting on new block
+		if (bi == lis.length) {
+			lis.push(0)
+			
+			const bPrev = bi>0? bs[bi-1]: null
+			b.location.s = bPrev? bPrev.location.e: 0
+			b.location.e = b.location.s
 
-		// log({block}, 3, {alignValuesLeftColumnMinWidth: 30})
-		const {lexems} = block
-		const doneWithLexems0 = blocki == lexems.length
-		if (doneWithLexems0) {
-			doneWithLexemsBefore(block)
+			b.tokens = []
+
+			if (b.lexems) {
+				b.lexems = b.lexems.map(lexemCopyClean1Level)
+				b.matched = !b.usingOr // set matched var default state
+			}
+		}
+		const li = lis[bi]
+
+		// get lexem
+		const ls = b.lexems
+		if (li == ls.length) { // done with block
+			bNextDo(bs, lis)
 			continue
 		}
-		const lexem = lexems[blocki]
-		// log({lexem, lexems, blocki})
-		if (lexem.lexems) { // create block
-			// log({pushed: lexem}, 2)
-			blocks.push(lexem); blocksi++
+		if (li > ls.length) throw new Error( // TODO: shouldn't happen, remove
+			`li > ls.length (${li} > ${ls.length})`)
+		const l = ls[li]
+
+		// TODO: yield tokens when as soon as decided
+		// 	(eg. not inside usingAnd block, or rest is optional)
+		// 	const safeToYield = safeToYieldGet(bs)
+
+		if (l.lexems) { // add + goto new block
+			bs.push(l)
 			continue
 		}
 
-		if (!lexem.regex) throw new Error( // TODO: shouldn't happen, remove
-			`expected lexem(${lexem}, ${lexem.name}).regex to exist`)
+		l.location.s = b.location.e
+		l.location.e = se
 
-		const match = str.match(lexem.regex)
+		// log({al: l})
+		const match = str.substring(l.location.s, l.location.e).match(l.regex)
 		if (!match) {
-			lexem.matched = false
-			handleMatch(block, lexem); continue
+			l.tokens = []
+			l.matched = false; handleMatch(bs, lis); continue
 		}
 
-		lexem.tokens = [{match, lexem}]
-		lexem.matched = true
 		const retainLength =
-				lexem.retain===true ? match.length
-			: lexem.retain>=0 ? lexem.retain
-			: Math.max(0, match.length + lexem.retain)
-		const restStr = str.substr(retainLength)
-		str = restStr
+				l.retain===true ? match[0].length
+			: l.retain>=0 ? l.retain
+			: Math.max(0, match[0].length + l.retain)
+		l.location.e = l.location.s + retainLength
+		// log({lo:l.location.s, retainLength, match, r: l.retain})
 
-		handleMatch(block, lexem); continue
+		l.tokens = [{match, lexem: l, location: l.location}]
+		l.matched = true; handleMatch(bs, lis); continue
 	}
 
-	return ctx.lexem.tokens
+	return baseLexem.tokens
 }
 
-export const exprCtxDefault = {lexem: lexemRoot.expr}
+export const exprCtxDefaultGet = ()=> ({lexem: lexemCopyClean1Level(lexemRoot.expr)})
+
+
+// helpers
+
+export const lexemCopyClean1Level = l=> ({...l, tokens: void 0, matched: void 0, location: {s: 0, e: 0}}) // s=start, e=end
+
+const safeToYieldGet = bs=> !bs
+	.filter((v, i)=> i <= bs.length-1)
+	.some(b=> !b.usingOr) // TODO: should also be ok if rest lexems in an usingAnd is optional
+
+
+// logic subs
+
+const handleMatch = (bs, lis)=> {
+	const bi = bs.length-1; const li = lis[bi]
+	const b = bs[bi]
+	const l = b.lexems[li]
+
+	const {repeatShould, bNextDoShould} = fixOk(b, l)
+	
+	if (repeatShould) lInsertForRepeatOptional(bs, lis, l)
+	else if (bNextDoShould) { bNextDo(bs, lis); return }
+
+	lNextDo(bs, lis)
+}
+
+const fixOk = (b, l)=> {
+	const repeatShould = l.matched && l.repeat
+	const repeatFirst = l.repeat && !l.optional // no optional non-repeat in or
+	const matchedDefaultChanged = b.matched == b.usingOr
+	const backFromFailingRepeat = l.repeat && matchedDefaultChanged
+	const bNextDoShould =
+				(b.usingOr && l.matched)
+		|| (!b.usingOr && !l.matched && !l.optional)
+		|| backFromFailingRepeat
+
+	if (bNextDoShould && (repeatFirst || !l.repeat))
+		b.matched = l.matched // or will turn on, and will turn off
+	if (b.matched) b.location.e = l.location.e
+	// log({l, repeatShould, repeatFirst, matchedDefaultChanged, backFromFailingRepeat, bNextDoShould, b}, 3)
+
+	return {repeatShould, bNextDoShould}
+}
+
+const bNextDo = (bs, lis)=> {
+	const bi = bs.length-1; const li = lis[bi]
+	const b = bs[bi]
+	// const l = b[li]
+
+	// b.matched // keep it as is, either the default or changed in handleMatch
+	b.tokens = b.matched? concat(b.lexems.slice(0, li+1).map(l=> l.tokens)): []
+	bs.pop(); lis.pop() // remove current/last b
+	
+	const {repeatShould, bNextDoShould} = bi>0? fixOk(bs[bi-1], b): {}
+
+	// if (repeatShould) lInsertForRepeatOptional(bs, lis, b)
+	// else if (bNextDoShould) { bNextDo(bs, lis); return }
+	// log({b}, 3)
+
+	lNextDo(bs, lis)
+}
+
+const lInsertForRepeatOptional = (bs, lis, l)=> {
+	const bi = bs.length-1; const li = lis[bi]
+	const b = bs[bi]
+	// const l = b[li]
+
+	b.lexems.splice(li+1, 0, {...lexemCopyClean1Level(l), optional: true})
+}
+
+const lNextDo = (bs, lis)=> {
+	const bi = bs.length-1
+	lis[bi]++ // do next step on b
+	// log({a: true, bs, lis, bi, lexems: bs[bi] && bs[bi].lexems})
+}
