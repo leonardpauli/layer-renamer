@@ -184,7 +184,7 @@ const bNextDo = (bs, lis)=> {
 
 	// b.matched // keep it as is, either the default or changed in handleMatch
 	const innerTokens = b.matched? concat(b.lexems.slice(0, li+1).map(l=> l.tokens)): []
-	b.matched = b.matched && innerTokens.length
+	b.matched = b.matched && !!innerTokens.length
 	b.tokens = b.matched? [{lexem: b, tokens: innerTokens}]: []
 	bs.pop(); lis.pop() // remove current/last b
 	
