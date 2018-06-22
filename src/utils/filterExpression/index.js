@@ -25,5 +25,8 @@ const evaluate = (ctx, expr)=> expr.value =
 const valueEq = (a, b)=> a==b
 
 
-export const exprCtxDefaultGet = ()=> ({lexem: lexemCopyClean1Level(lexemRoot.expr)})
+export const exprCtxDefaultGet = ()=> ({
+	lexem: lexemCopyClean1Level(lexemRoot.expr),
+	vars: {},
+})
 const parseStrCtxGet = (ctx = {})=> ({...exprCtxDefaultGet(), ...ctx})

@@ -37,6 +37,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 				num,
 				text,
 				paren,
+				id,
 				id.strip,
 				id.special,
 			],
@@ -56,7 +57,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 	dot: {regex: /^\./},
 	comma: {regex: /^,/},
 	id: {
-		regex: /^[^ .(){}[\]\n\t"]+/,
+		regex: /^[^ .(){}[\]\n\t"-<>=*+/!,]+/,
 		striprest: {lexems: [dot, {usingOr, lexems: [id, text, paren]}]},
 		strip: {lexems: [
 			[id, {optional}],

@@ -4,13 +4,15 @@
 // created by Leonard Pauli, jun 2018
 // copyright © Leonard Pauli 2018
 
-import {log} from 'string-from-object'
+import sfo, {log} from 'string-from-object'
 import filterExpression, {exprCtxDefaultGet} from '.'
-import {tokenizeNext} from './tokenizer'
+import {tokenizeNext, tokenizeNextCore} from './tokenizer'
+import {astify} from './aster'
 import lexems from './lexems'
 import {flags} from './lexemUtils'
 
 const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
+
 
 const testTokenizeStr = (ctx, str, tasexp)=> it(str, ()=> {
 	const tokens = tokenizeNext(ctx, str)
@@ -39,7 +41,7 @@ describe('tokenize', ()=> {
 		testTokenizeStr(exprCtxDefaultGet(), 'a.aa', [['a', '@.id'], ['.', '@.dot'], ['aa', '@.id']])
 		testTokenizeStr(exprCtxDefaultGet(), '(a.aa + y)', [
 			['(', '@.paren.open'], ...[
-				['a'], ['.'], ['aa'], [' ', '@.sp'], ['+', '@.id'], [' ', '@.sp'], ['y', '@.id'],
+				['a'], ['.'], ['aa'], [' ', '@.sp'], ['+', '@.id.special'], [' ', '@.sp'], ['y', '@.id'],
 			], [')', '@.paren.close'],
 		])
 		testTokenizeStr(exprCtxDefaultGet(), '"hello\\(d + "y") there"', [
@@ -50,20 +52,20 @@ describe('tokenize', ()=> {
 				], [')', '@.paren.close'], [' there'],
 			], ['"', '@.text.close'],
 		])
+		testTokenizeStr(exprCtxDefaultGet(), 'a+', [['a', '@.id'], ['+', '@.id.special']])
 	})
+})
 
-	// it.skip('.text', ()=> {
-	// 	const tokens = tokenizeNext(exprCtxDefaultGet(), '"a')
-	// 	log(tokens)
-	// 	expect(tokens).toHaveLength(1)
-	// 	expect(tokens[0].lexem.name).toBe('.text')
-	// 	expect(tokens[0].match[0]).toBe('haa')
-	// })
-	// it('.paren', ()=> {
-	// 	const tokens = tokenizeNext(exprCtxDefaultGet(), '(haa)')
-	// 	log(tokens)
-	// 	expect(tokens).toHaveLength(1)
-	// 	expect(tokens[0].lexem.name).toBe('.paren')
-	// 	expect(tokens[0].match[0]).toBe('haa')
-	// })
+describe('evaluate', ()=> {
+	it('some', ()=> {
+		const ctx = exprCtxDefaultGet()
+		tokenizeNextCore(ctx, '"hel\\(add (55, 3, 7) rr)lo"')
+		// tokenizeNextCore(ctx, 'a 44 c')
+		// tokenizeNextCore(ctx, '(1 + 3) * 2')
+		ctx.vars.str = 'hello'
+		ctx.vars.add = '+++'
+		if (ctx.lexem.tokens.length > 1) throw new Error(`ctx.lexem.tokens.length > 1`)
+		log(astify(ctx, ctx.lexem.tokens[0]), 10)
+		// log(evaluate(ctx, tokens[0]))
+	})
 })

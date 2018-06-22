@@ -25,7 +25,7 @@ export const tokenize = function* tokenize (ctx, str, state = {}) {
 
 export const config = {tokenizeNextMaxIterations: 100000}
 // eslint-disable-next-line max-statements
-export const tokenizeNext = (ctx, str)=> { // ctx = {lexem}
+export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 	// assumes ctx.lexem has gone through lexemUtils.expand for validation etc
 	if (!ctx.lexem.lexems) throw new Error( // TODO: possibly just autowrap if necessary?
 		`tokenizeNext: ctx.lexem(${ctx.lexem.name}) has to have .lexems; -> just wrap it {lexems: [<lexem>]}`)
@@ -41,7 +41,7 @@ export const tokenizeNext = (ctx, str)=> { // ctx = {lexem}
 	//
 	// b.location.(s, e) // start, end; index in str
 
-	const baseLexem = ctx.lexem // Beware! mutating // lexemCopyClean1Level(ctx.lexem)
+	const baseLexem = ctx.lexem
 	baseLexem.location = {s: 0, e: 0}
 	const se = str.length // string end, possibly take from baseLexem.location.e
 	const bs = [baseLexem]
@@ -121,12 +121,19 @@ export const tokenizeNext = (ctx, str)=> { // ctx = {lexem}
 		l.tokens = [{match, lexem: l, location: l.location}]
 		l.matched = true; handleMatch(bs, lis); continue
 	}
+}
 
-	return baseLexem.tokens
+export const tokenizeNext = (ctx, str)=> {
+	const baseLexem = ctx.lexem // Beware! mutating // lexemCopyClean1Level(ctx.lexem)
+	tokenizeNextCore(ctx, str)
+	// TODO: don't return anything to signal that baseLexem has been changed?
+	return extractMatchTokens(baseLexem.tokens)
 }
 
 
 // helpers
+
+const extractMatchTokens = tokens=> concat(tokens.map(t=> t.tokens? extractMatchTokens(t.tokens): [t]))
 
 export const lexemCopyClean1Level = l=> ({...l, tokens: void 0, matched: void 0, location: {s: 0, e: 0}}) // s=start, e=end
 
@@ -176,8 +183,9 @@ const bNextDo = (bs, lis)=> {
 	// const l = b[li]
 
 	// b.matched // keep it as is, either the default or changed in handleMatch
-	b.tokens = b.matched? concat(b.lexems.slice(0, li+1).map(l=> l.tokens)): []
-	if (b.matched && !b.tokens.length) b.matched = false
+	const innerTokens = b.matched? concat(b.lexems.slice(0, li+1).map(l=> l.tokens)): []
+	b.matched = b.matched && innerTokens.length
+	b.tokens = b.matched? [{lexem: b, tokens: innerTokens}]: []
 	bs.pop(); lis.pop() // remove current/last b
 	
 	const {repeatShould, bNextDoShould} = bi>0? fixOk(bs[bi-1], b): {}
