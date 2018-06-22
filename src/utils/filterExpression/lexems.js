@@ -19,19 +19,19 @@ const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
 // lexems definition
 
 const root = stupidIterativeObjectDependencyResolve(({
-	lexems, paren, num, sp, spo, expr, text, dot, comma, id, ido,
+	lexems, paren, num, sp, spo, expr, text, dot, comma, id,
 })=> ({
 	paren: {
-		lexems: [paren.open, spo, expr, spo, {...paren.close, optional}], // TODO: autoInsertIfNeeded instead
+		lexems: [paren.open, spo, expr, spo, [paren.close, {optional}]], // TODO: autoInsertIfNeeded instead
 		open: {regex: /^\(/},
 		close: {regex: /^\)/},
 	},
 	num: {regex: /^[1-9][0-9]*(\.[0-9]+)?/, description: 'number'},
 	sp: {regex: /^[\t ]+/, description: 'space-horizontal (optional for formatting / min 1 req for separation / elastic tab for alignment)'},
-	spo: {...sp, optional},
+	spo: [sp, {optional}],
 	expr: {
 		description: 'expression',
-		lexems: [expr.single, {repeat, optional, lexems: [spo, expr.single]}],
+		lexems: [expr.single, [{lexems: [spo, expr.single]}, {repeat, optional}]],
 		single: {
 			usingOr, lexems: [
 				num,
@@ -50,24 +50,23 @@ const root = stupidIterativeObjectDependencyResolve(({
 			open: {regex: /^\\\(/, retain: -1},
 			lexems: [text.expr.open, paren],
 		},
-		inner: {
-			repeat, optional, usingOr, lexems: [text.raw, text.expr],
-		},
-		lexems: [text.open, text.inner, {...text.close, optional}], // TODO: autoInsertIfNeeded instead
+		inner: {usingOr, lexems: [text.raw, text.expr]},
+		lexems: [text.open, [text.inner, {repeat, optional}], [text.close, {optional}]], // TODO: autoInsertIfNeeded instead
 	},
 	dot: {regex: /^\./},
 	comma: {regex: /^,/},
 	id: {
 		regex: /^[^ .(){}[\]\n\t"]+/,
-		strip: {
-			usingOr, lexems: [id, {lexems: [ido, // abc, .a."b".("b"+c)
-				{lexems: [dot, {usingOr, lexems: [id, text, paren]}], optional, repeat}]}],
-		},
+		striprest: {lexems: [dot, {usingOr, lexems: [id, text, paren]}]},
+		strip: {lexems: [
+			[id, {optional}],
+			[id.striprest, {optional, repeat}],
+		], description: 'id strip/chain, eg. `abc`, or `.a."b".("b"+c)`'},
 		special: {
-			regex: /^[-<>=+*/!,]+/, // !%&\/=?^*<>@$§|≈±~–,≤≥•‰≠·
-		},
+			regex: /^[-<>=*+/!,]+/,
+			description: 'allowed right next it id without space, eg. a+b',
+		}, // !%&\/=?^*<>@$§|≈±~–,≤≥•‰≠·
 	},
-	ido: {...id, optional},
 	lexems: [expr],
 }), {n: 3})
 

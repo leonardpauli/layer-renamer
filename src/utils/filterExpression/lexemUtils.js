@@ -25,7 +25,7 @@ export const flags = {
 }
 
 // lexems example
-const keysMeta = 'name,description'.split(',')
+const keysMeta = 'name,description,extends'.split(',')
 const keysMatch = 'regex,retain,lexems,usingOr'.split(',')
 const keysTokenizerReserved = 'matched,tokens,match,location'.split(',')
 export const keysReserved = concat([keysMeta, keysMatch, keysTokenizerReserved, Object.keys(flags)])
@@ -56,6 +56,8 @@ const lexemValidateFix = lexem=> {
 	if (lexem.regex) {
 		if (!(lexem.regex instanceof RegExp)) throw new Error(
 			`lexem(${lexem.name}).regex (should be) instanceof RegExp (was ${lexem.regex})`)
+		if (''.match(lexem.regex)) throw new Error(
+			`lexem(${lexem.name}).regex(${lexem.regex}) matches zero length, please fix (or mod tokenizer, see TODO in tests)`)
 		lexem.retain = lexem.retain === void 0? true: lexem.retain===false? 0: lexem.retain
 	} else if (lexem.lexems) {
 		if (!Array.isArray(lexem.lexems)) throw new Error(
@@ -66,7 +68,16 @@ const lexemValidateFix = lexem=> {
 	} else throw new Error(
 		`lexem(${lexem.name}) has to have a matcher (.regex/.lexems)`)
 }
+const unwrapLexem = lexem=> {
+	if (Array.isArray(lexem)) {
+		const [base, flags] = lexem
+		lexem = {...base, extends: [...base.extends || [], base], ...flags}
+	}
+	return lexem
+}
 const _process = (lexem, k, parent=null, state={named: new Set(), noname: new Set()})=> {
+	lexem = unwrapLexem(lexem)
+
 	// process meta
 	lexem.name = lexem.name || (parent && parent.name+'.' || '')+k
 	state.named.add(lexem)
@@ -78,21 +89,28 @@ const _process = (lexem, k, parent=null, state={named: new Set(), noname: new Se
 
 	// process children
 	const keysChildren = Object.keys(lexem).filter(k=> !keysReserved.includes(k))
-	keysChildren.forEach(k=> _process(lexem[k], k, lexem, state))
+	keysChildren.forEach(k=> lexem[k] = _process(lexem[k], k, lexem, state))
+
+	return lexem
 }
 
-const recursivelyAddNameToLexems = ([lexem, k, parent])=> {
+const recursivelyFixNestedLexems = ([lexem, k, parent])=> {
+	lexem = unwrapLexem(lexem)
 	if (!lexem.name) {
 		lexem.name = (parent && parent.name+'.' || '')+k
-		lexem.lexems && lexem.lexems.forEach((l, k)=> recursivelyAddNameToLexems([l, k, lexem]))
+		lexem.lexems && lexem.lexems.forEach((l, k)=> lexem.lexems[k] = recursivelyFixNestedLexems([l, k, lexem]))
 	}
 	lexemValidateFix(lexem)
+	return lexem
 }
 
 export const expand = root=> {
+	if (Array.isArray(root)) throw new Error(
+		`expand got array lexem, expected object, please wrap like {lexems: [<array-lexem>]}`)
 	const state = {named: new Set(), noname: new Set()}
 	_process(root, '@', null, state)
-	state.noname.forEach(recursivelyAddNameToLexems)
+	state.noname.forEach(([lexem, k, parent])=> parent.lexems[k] =
+		recursivelyFixNestedLexems([lexem, k, parent]))
 	// intermediate lexems = named through recursivelyAddNameToLexems
 	// all lexems = state.named + intermediate lexems
 }
