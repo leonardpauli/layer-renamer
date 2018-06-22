@@ -1,3 +1,5 @@
+> **See [development branch](https://github.com/leonardpauli/layer-renamer/tree/development) for latest development**
+
 # LayerRenamer - like a pro &nbsp;&nbsp;<a href="http://bit.ly/SketchRunnerWebsite"><img src="http://sketchrunner.com/img/badge_blue.png" width=120></a>
 
 *- a plugin for [Sketch](https://sketchapp.com/)*
