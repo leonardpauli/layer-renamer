@@ -13,7 +13,6 @@ import {flags, expand} from '../parser/lexemUtils'
 const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
 
 // TODO: fix autoInsertIfNeeded
-// TODO: keep ref to original lexem when adding flags, eg. {extends: someLexem, optional} + reuse its name
 
 
 // lexems definition
@@ -65,7 +64,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 		], description: 'id strip/chain, eg. `abc`, or `.a."b".("b"+c)`'},
 		special: {
 			regex: /^[-<>=*+/!,]+/,
-			description: 'allowed right next it id without space, eg. a+b',
+			description: 'allowed right next to id without space, eg. a+b',
 		}, // !%&\/=?^*<>@$§|≈±~–,≤≥•‰≠·
 	},
 	lexems: [expr],
