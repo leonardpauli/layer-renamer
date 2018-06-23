@@ -5,6 +5,7 @@
 // copyright © Leonard Pauli 2018
 
 import {log} from 'string-from-object'
+import {lexemExtendCopyClean1Level} from './lexemUtils'
 
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
 
@@ -137,12 +138,6 @@ export const tokenizeNext = (ctx, str)=> {
 
 const extractMatchTokens = l=> l.matched? [l, ...concat(
 	l.tokens.map(t=> extractMatchTokens(t)))]: []
-
-export const lexemExtendCopyClean1Level = l=> ({
-	...l.type===l? {type: l}: {...l},
-	matched: void 0, match: void 0, location: {s: 0, e: 0}, // s=start, e=end
-	tokens: void 0, lexems: void 0,
-})
 
 // const safeToYieldGet = bs=> !bs
 // 	.filter((v, i)=> i <= bs.length-1)

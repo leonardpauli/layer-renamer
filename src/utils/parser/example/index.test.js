@@ -9,13 +9,8 @@ import sfo, {log} from 'string-from-object'
 import {tokenizeNextCore} from '../tokenizer'
 import {testTokenizeStr, logAstValue} from '../testUtils'
 import {astify} from '../aster'
-import {flags, expand, lexemIs} from '../lexemUtils'
 
-import {exprCtxDefaultGet} from '.'
-import lexems from './lexems'
-import './lexemsAstExt'
-
-const {optional, repeat, usingOr} = flags
+import {evaluate, exprCtxDefaultGet} from '.'
 
 
 describe('tokenize', ()=> {
@@ -27,12 +22,14 @@ describe('tokenize', ()=> {
 describe('evaluate', ()=> {
 	it('some asta', ()=> {
 		const ctx = exprCtxDefaultGet()
-		tokenizeNextCore(ctx, '(1 + 3) * 2')
+		// tokenizeNextCore(ctx, '(1 + 3) * 2')
+		tokenizeNextCore(ctx, '( (3 * (4) + 2) )')
 		// tokenizeNextCore(ctx, '1 + 3 * 2')
 		ctx.vars.str = 'hello'
 		ctx.vars.add = '+++'
 		const r = astify(ctx, ctx.lexem)
 		logAstValue(r, 15)
+		log(evaluate(ctx, ctx.lexem))
 		// log(evaluate(ctx, tokens[0]))
 	})
 })

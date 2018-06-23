@@ -53,6 +53,13 @@ const lexemExample = { ...lexemBase, ...lexemMatch, ...flags }
 
 export const lexemIs = v=> !!(v && v.type) // TODO: use symbol instead? (add in validate, export + check existance here)
 
+export const lexemExtendCopyClean1Level = l=> ({
+	...l.type===l? {type: l}: {...l},
+	matched: void 0, match: void 0, location: {s: 0, e: 0}, // s=start, e=end
+	tokens: void 0, lexems: void 0,
+	astTokens: void 0, astValue: void 0,
+})
+
 
 // process lexems
 const lexemTypeValidateFix = lt=> { // lexem type

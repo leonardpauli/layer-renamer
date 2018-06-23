@@ -47,7 +47,7 @@ const prefix = true
 // TODO: validate astids schema
 // {is: token=> Boolean, infix/suffix/prefix: true, name: String, prio: Number}
 
-const astids = {
+export const astids = {
 	plus: {is: ({type: t, astValue: v})=> t===id.special && v==='+', infix},
 	minus: {is: ({type: t, astValue: v})=> t===id.special && v==='-', infix},
 	mul: {is: ({type: t, astValue: v})=> t===id.special && v==='*', infix},
