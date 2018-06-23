@@ -6,7 +6,7 @@
 
 import {log} from 'string-from-object'
 import lexemRoot from './lexems'
-import {lexemExtendCopyClean1Level} from './tokenizer'
+import {lexemExtendCopyClean1Level} from '../parser/tokenizer'
 
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
 

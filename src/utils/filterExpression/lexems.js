@@ -9,7 +9,7 @@
 import {log} from 'string-from-object'
 import {stupidIterativeObjectDependencyResolve} from '../object'
 
-import {flags, expand} from './lexemUtils'
+import {flags, expand} from '../parser/lexemUtils'
 const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
 
 // TODO: fix autoInsertIfNeeded

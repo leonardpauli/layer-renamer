@@ -6,11 +6,11 @@
 
 import sfo, {log} from 'string-from-object'
 import filterExpression, {exprCtxDefaultGet} from '.'
-import {tokenizeNext, tokenizeNextCore} from './tokenizer'
-import {astify} from './aster'
+import {tokenizeNext, tokenizeNextCore} from '../parser/tokenizer'
+import {astify} from '../parser/aster'
 import lexems from './lexems'
 import './lexemsAstExt'
-import {flags, expand, lexemIs} from './lexemUtils'
+import {flags, expand, lexemIs} from '../parser/lexemUtils'
 
 const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
 

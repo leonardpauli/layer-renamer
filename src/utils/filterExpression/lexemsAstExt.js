@@ -7,7 +7,7 @@
 // based on rim / towards rim
 
 import sfo, {log} from 'string-from-object'
-import {handleUnhandled, astify, tokensGroupPrio} from './aster'
+import {handleUnhandled, astify, tokensGroupPrio} from '../parser/aster'
 
 import root from './lexems'
 
