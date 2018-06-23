@@ -30,7 +30,7 @@ export const flags = {
 const keysMeta = 'name,description,type'.split(',') // on .type
 const keysMatch = 'regex,retain,lexems,usingOr'.split(',') // on .type
 const keysTokenizerReserved = 'matched,match,location,tokens,lexems'.split(',')
-const keysAst = 'astValueGet,lexemsAstTypes,astValue,astId,astTokens,astTokenWrapperIs,astTokenNot'.split(',')
+const keysAst = 'astValueGet,lexemsAstTypes,astValue,astTokens,astId,astTokenWrapperIs,astTokenNot'.split(',')
 export const keysReserved = concat([keysMeta, keysMatch, keysTokenizerReserved, keysAst, Object.keys(flags)])
 
 /*

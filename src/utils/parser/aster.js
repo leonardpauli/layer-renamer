@@ -17,6 +17,7 @@ const valueEq = (a, b)=> a==b
 export const tokensGroupPrio = (ctx, token, lexemsAstTypes)=> {
 	token.tokens.forEach(t=> astify(ctx, t))
 	if (!token.astTokens) astTokensSet(token)
+
 	token.astTokens.forEach(t=> t.astId = astidGet(lexemsAstTypes, t))
 	return tsGPInner(token.astTokens)
 }
@@ -43,7 +44,14 @@ const tsGPInner = astTokens=> {
 // helpers
 
 const astidGet = (types, token)=> types.find(id=> id.is(token))
-const astTokensSet = token=> token.astTokens = concat(token.tokens.map(t=> t.type.astTokenWrapperIs? t.astTokens: t.type.astTokenNot? []: [t]))
+const astTokensSet = token=> {
+	token.astTokens = concat(token.tokens.map(t=>
+			t.type.astTokenWrapperIs? t.astTokens // assumes astify(ctx, t) has been run
+		: t.type.astTokenNot? []
+		: [t]
+	))
+}
+
 
 // TODO: return required root.error lexem instead with tokens + org lexem attached?
 export const handleUnhandled = (token, rest)=>
@@ -51,14 +59,17 @@ export const handleUnhandled = (token, rest)=>
 
 
 // astify
+// 	- astTokens are all tokens relevant for the ast
+// 	- astValue is a value or array of other tokens [token{astValue}, ...], depending on parent token type
 
 export const astify = (ctx, token)=> {
 	if (!token) throw new Error(`no token passed to astify`)
 	if (token.astValue!==void 0) return token.astValue
 	if (!token.type.astValueGet) return token.astValue = handleUnhandled(token, {
 		from: 'astify', err: 'astValueGet missing'})
-	// TODO: have either astValue OR astTokens, not both?
+	
 	token.astValue = token.type.astValueGet(ctx, token)
 	if (!token.astTokens) astTokensSet(token)
+
 	return token.astValue
 }

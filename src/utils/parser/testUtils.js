@@ -31,6 +31,6 @@ const logAstValuePlain = custom({
 	filter: ({key, value, parent})=> value !== void 0
 		&& !(parent.key === 'type')
 		&& !(parent.key === 'astId')
-		&& !'optional,repeat,tokens,lexems,location,match,matched'.split(',').includes(key),
+		&& !'optional,repeat,tokens,lexems,location,match,matched,astTokens'.split(',').includes(key),
 })
 export const logAstValue = (...args)=> console.log(logAstValuePlain(...args))

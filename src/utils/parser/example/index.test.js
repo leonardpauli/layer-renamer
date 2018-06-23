@@ -27,7 +27,6 @@ describe('tokenize', ()=> {
 describe('evaluate', ()=> {
 	it('some asta', ()=> {
 		const ctx = exprCtxDefaultGet()
-		// TODO: only astValue OR astTokens
 		tokenizeNextCore(ctx, '(1 + 3) * 2')
 		// tokenizeNextCore(ctx, '1 + 3 * 2')
 		ctx.vars.str = 'hello'

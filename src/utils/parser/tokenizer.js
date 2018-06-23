@@ -113,7 +113,8 @@ export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 				l.type.retain===true ? match[0].length
 			: l.type.retain>=0 ? l.type.retain
 			: Math.max(0, match[0].length + l.type.retain)
-		if (isNaN(retainLength)) throw new Error( // TODO: shouldn't happen, remove
+		// TODO: validate that expand has been run before loop instead?
+		if (isNaN(retainLength)) throw new Error(
 			`invalid lexem, forgot to run root through lexemUtils.expand?`)
 		l.location.e = l.location.s + retainLength
 		// log({lo:l.location.s, retainLength, match, r: l.retain})
