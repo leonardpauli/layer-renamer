@@ -27,10 +27,10 @@ export const config = {tokenizeNextMaxIterations: 100000}
 // eslint-disable-next-line max-statements
 export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 	// assumes ctx.lexem has gone through lexemUtils.expand for validation etc
-	if (!ctx.lexem.lexems) throw new Error( // TODO: possibly just autowrap if necessary?
-		`tokenizeNext: ctx.lexem(${ctx.lexem.name}) has to have .lexems; -> just wrap it {lexems: [<lexem>]}`)
-	if (ctx.lexem.repeat) throw new Error( // TODO: possibly just autowrap if necessary?
-		`tokenizeNext: ctx.lexem(${ctx.lexem.name}) can't have .repeat; -> just wrap it {lexems: [<lexem>]}`)
+	if (!ctx.lexem.type.lexems) throw new Error( // TODO: possibly just autowrap if necessary?
+		`tokenizeNext: ctx.lexem(${ctx.lexem.type.name}) has to have .lexems; -> just wrap it {lexems: [<lexem>]}`)
+	if (ctx.lexem.type.repeat) throw new Error( // TODO: possibly just autowrap if necessary?
+		`tokenizeNext: ctx.lexem(${ctx.lexem.type.name}) can't have .repeat; -> just wrap it {lexems: [<lexem>]}`)
 
 	// b = block, l = lexem, i = index
 	// bs  = [b, b, ...]; b  = bs[bi];  b = [l, l, ...]
@@ -72,9 +72,9 @@ export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 
 			b.tokens = []
 
-			if (b.lexems) {
-				b.lexems = b.lexems.map(lexemCopyClean1Level)
-				b.matched = !b.usingOr // set matched var default state
+			if (b.type.lexems) {
+				b.lexems = b.type.lexems.map(lexemExtendCopyClean1Level)
+				b.matched = !b.type.usingOr // set matched var default state
 			}
 		}
 		const li = lis[bi]
@@ -93,7 +93,7 @@ export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 		// 	(eg. not inside usingAnd block, or rest is optional)
 		// 	const safeToYield = safeToYieldGet(bs)
 
-		if (l.lexems) { // add + goto new block
+		if (l.type.lexems) { // add + goto new block
 			bs.push(l)
 			continue
 		}
@@ -102,7 +102,7 @@ export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 		l.location.e = se
 
 		// log({al: l})
-		const match = str.substring(l.location.s, l.location.e).match(l.regex)
+		const match = str.substring(l.location.s, l.location.e).match(l.type.regex)
 		if (!match) {
 			l.location.e = l.location.s
 			l.tokens = []
@@ -110,36 +110,42 @@ export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 		}
 
 		const retainLength =
-				l.retain===true ? match[0].length
-			: l.retain>=0 ? l.retain
-			: Math.max(0, match[0].length + l.retain)
+				l.type.retain===true ? match[0].length
+			: l.type.retain>=0 ? l.type.retain
+			: Math.max(0, match[0].length + l.type.retain)
 		if (isNaN(retainLength)) throw new Error(
 			`invalid lexem, forgot to run root through lexemUtils.expand?`)
 		l.location.e = l.location.s + retainLength
 		// log({lo:l.location.s, retainLength, match, r: l.retain})
 
-		l.tokens = [{match, lexem: l, location: l.location}]
+		l.match = match
+		l.tokens = []
 		l.matched = true; handleMatch(bs, lis); continue
 	}
 }
 
 export const tokenizeNext = (ctx, str)=> {
-	const baseLexem = ctx.lexem // Beware! mutating // lexemCopyClean1Level(ctx.lexem)
+	const baseLexem = ctx.lexem // Beware! mutating // lexemExtendCopyClean1Level(ctx.lexem)
 	tokenizeNextCore(ctx, str)
 	// TODO: don't return anything to signal that baseLexem has been changed?
-	return extractMatchTokens(baseLexem.tokens)
+	return extractMatchTokens(baseLexem)
 }
 
 
 // helpers
 
-const extractMatchTokens = tokens=> concat(tokens.map(t=> t.tokens? extractMatchTokens(t.tokens): [t]))
+const extractMatchTokens = l=> l.matched? [l, ...concat(
+	l.tokens.map(t=> extractMatchTokens(t)))]: []
 
-export const lexemCopyClean1Level = l=> ({...l, tokens: void 0, matched: void 0, location: {s: 0, e: 0}}) // s=start, e=end
+export const lexemExtendCopyClean1Level = l=> ({
+	...l.type===l? {type: l}: {...l},
+	matched: void 0, match: void 0, location: {s: 0, e: 0}, // s=start, e=end
+	tokens: void 0, lexems: void 0,
+})
 
 const safeToYieldGet = bs=> !bs
 	.filter((v, i)=> i <= bs.length-1)
-	.some(b=> !b.usingOr) // TODO: should also be ok if rest lexems in an usingAnd is optional
+	.some(b=> !b.type.usingOr) // TODO: should also be ok if rest lexems in an usingAnd is optional
 
 
 // logic subs
@@ -150,7 +156,7 @@ const handleMatch = (bs, lis)=> {
 	const l = b.lexems[li]
 
 	const {repeatShould, bNextDoShould} = fixOk(b, l)
-	
+
 	// if (repeatShould) log({repeatShould, b, l}, 2)
 	
 	if (repeatShould) lInsertForRepeatOptional(bs, lis, l)
@@ -162,11 +168,11 @@ const handleMatch = (bs, lis)=> {
 const fixOk = (b, l)=> {
 	const repeatShould = l.matched && l.repeat
 	const repeatFirst = l.repeat && !l.optional // no optional non-repeat in or
-	const matchedDefaultChanged = b.matched == b.usingOr
+	const matchedDefaultChanged = b.matched == b.type.usingOr
 	const backFromFailingRepeat = l.repeat && matchedDefaultChanged
 	const bNextDoShould =
-				(b.usingOr && l.matched)
-		|| (!b.usingOr && !l.matched && !l.optional)
+				(b.type.usingOr && l.matched)
+		|| (!b.type.usingOr && !l.matched && !l.optional)
 		|| backFromFailingRepeat
 
 	if (bNextDoShould && (repeatFirst || !l.repeat))
@@ -183,9 +189,9 @@ const bNextDo = (bs, lis)=> {
 	// const l = b[li]
 
 	// b.matched // keep it as is, either the default or changed in handleMatch
-	const innerTokens = b.matched? concat(b.lexems.slice(0, li+1).map(l=> l.tokens)): []
-	b.matched = b.matched && !!innerTokens.length
-	b.tokens = b.matched? [{lexem: b, tokens: innerTokens}]: []
+
+	b.tokens = b.matched? b.lexems.slice(0, li+1).filter(l=> l.matched): []
+	b.matched = b.matched && !!b.tokens.length
 	bs.pop(); lis.pop() // remove current/last b
 	
 	const {repeatShould, bNextDoShould} = bi>0? fixOk(bs[bi-1], b): {}
@@ -203,7 +209,7 @@ const lInsertForRepeatOptional = (bs, lis, l)=> {
 	const b = bs[bi]
 	// const l = b[li]
 
-	b.lexems.splice(li+1, 0, {...lexemCopyClean1Level(l), optional: true})
+	b.lexems.splice(li+1, 0, {...lexemExtendCopyClean1Level(l), optional: true})
 }
 
 const lNextDo = (bs, lis)=> {

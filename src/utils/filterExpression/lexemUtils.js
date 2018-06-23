@@ -18,19 +18,23 @@ const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
 // lexems flags
 
 export const flags = {
-	autoInsertIfNeeded: true, // if no other paths are valid, insert token even if it didn't exist, useful for eg. autoclose
+	// autoInsertIfNeeded: true, // if no other paths are valid, insert token even if it didn't exist, useful for eg. autoclose
 	optional: true,
 	repeat: true, // is one or more (+) by default, combine repeat + optional to get 0 or more (*)
 	usingOr: true,
 }
 
+// TODO: separate type and instance
+
 // lexems example
-const keysMeta = 'name,description,extends'.split(',')
-const keysMatch = 'regex,retain,lexems,usingOr'.split(',')
-const keysTokenizerReserved = 'matched,tokens,match,location'.split(',')
-export const keysReserved = concat([keysMeta, keysMatch, keysTokenizerReserved, Object.keys(flags)])
+const keysMeta = 'name,description,type'.split(',') // on .type
+const keysMatch = 'regex,retain,lexems,usingOr'.split(',') // on .type
+const keysTokenizerReserved = 'matched,match,location,tokens,lexems'.split(',')
+const keysAst = 'astValueGet,lexemsAstTypes,astValue,astId,astTokens,astTokenWrapperIs,astTokenNot'.split(',')
+export const keysReserved = concat([keysMeta, keysMatch, keysTokenizerReserved, keysAst, Object.keys(flags)])
 
 /*
+// (could probably use prototype/classes instead but nah, want to optimise for easy move to rim)
 const lexem = {}
 const lexemMatch = {
 	regex: /^((g1)|(g2))/,
@@ -47,60 +51,59 @@ const lexemBase = {
 const lexemExample = { ...lexemBase, ...lexemMatch, ...flags }
 */
 
+export const lexemIs = v=> !!(v && v.type) // TODO: use symbol instead? (add in validate, export + check existance here)
+
 
 // process lexems
-const lexemValidateFix = lexem=> {
-	if (!lexem.name) throw new Error(
-		`lexem(${sfo(lexem, 2)}).name not set`)
+const lexemTypeValidateFix = lt=> { // lexem type
+	if (!lt.name) throw new Error(
+		`lexem(${sfo(lt, 2)}).name not set`)
 
-	if (lexem.regex) {
-		if (!(lexem.regex instanceof RegExp)) throw new Error(
-			`lexem(${lexem.name}).regex (should be) instanceof RegExp (was ${lexem.regex})`)
-		if (''.match(lexem.regex)) throw new Error(
-			`lexem(${lexem.name}).regex(${lexem.regex}) matches zero length, please fix (or mod tokenizer, see TODO in tests)`)
-		lexem.retain = lexem.retain === void 0? true: lexem.retain===false? 0: lexem.retain
-	} else if (lexem.lexems) {
-		if (!Array.isArray(lexem.lexems)) throw new Error(
-			`lexem(${lexem.name}).lexems has to be array`)
-		lexem.usingOr = lexem.usingOr || false
-		if (lexem.usingOr && lexem.lexems.some(l=> l.optional)) throw new Error(
-			`lexem(${lexem.name}).lexems has one optional, not allowed + ambiguos/doesn't make sense when usingOr`)
+	if (lt.regex) {
+		if (!(lt.regex instanceof RegExp)) throw new Error(
+			`lexem(${lt.name}).regex (should be) instanceof RegExp (was ${lt.regex})`)
+		if (''.match(lt.regex)) throw new Error(
+			`lexem(${lt.name}).regex(${lt.regex}) matches zero length, please fix (or mod tokenizer, see TODO in tests)`)
+		lt.retain = lt.retain === void 0? true: lt.retain===false? 0: lt.retain
+	} else if (lt.lexems) {
+		if (!Array.isArray(lt.lexems)) throw new Error(
+			`lexem(${lt.name}).lexems has to be array`)
+		lt.usingOr = lt.usingOr || false
+		if (lt.usingOr && lt.lexems.some(l=> l.optional)) throw new Error(
+			`lexem(${lt.name}).lexems has one optional, not allowed + ambiguos/doesn't make sense when usingOr`)
 	} else throw new Error(
-		`lexem(${lexem.name}) has to have a matcher (.regex/.lexems)`)
+		`lexem(${lt.name}) has to have a matcher (.regex/.lexems)`)
 }
-const unwrapLexem = lexem=> {
-	if (Array.isArray(lexem)) {
-		const [base, flags] = lexem
-		lexem = {...base, extends: [...base.extends || [], base], ...flags}
-	}
-	return lexem
-}
+
 const _process = (lexem, k, parent=null, state={named: new Set(), noname: new Set()})=> {
-	lexem = unwrapLexem(lexem)
+	lexem.type = lexem.type || lexem
+	const {type} = lexem
 
 	// process meta
-	lexem.name = lexem.name || (parent && parent.name+'.' || '')+k
-	state.named.add(lexem)
+	type.name = type.name || (parent && parent.name+'.' || '')+k
+	state.named.add(type)
 
 	// validate matcher + set defaults
-	lexemValidateFix(lexem)
-	if (lexem.lexems) lexem.lexems.forEach((l, k)=>
-		!l.name && state.noname.add([l, k, lexem]))
+	lexemTypeValidateFix(type)
+	if (type.lexems) type.lexems.forEach((l, k)=>
+		!l.name && state.noname.add([l, k, type]))
 
 	// process children
-	const keysChildren = Object.keys(lexem).filter(k=> !keysReserved.includes(k))
-	keysChildren.forEach(k=> lexem[k] = _process(lexem[k], k, lexem, state))
+	const keysChildren = Object.keys(type).filter(k=> !keysReserved.includes(k))
+	keysChildren.forEach(k=> type[k] = _process(type[k], k, type, state))
 
 	return lexem
 }
 
 const recursivelyFixNestedLexems = ([lexem, k, parent])=> {
-	lexem = unwrapLexem(lexem)
-	if (!lexem.name) {
-		lexem.name = (parent && parent.name+'.' || '')+k
-		lexem.lexems && lexem.lexems.forEach((l, k)=> lexem.lexems[k] = recursivelyFixNestedLexems([l, k, lexem]))
+	lexem.type = lexem.type || lexem
+	const {type} = lexem
+
+	if (!type.name) {
+		type.name = (parent && parent.name+'.' || '')+k
+		type.lexems && type.lexems.forEach((l, k)=> type.lexems[k] = recursivelyFixNestedLexems([l, k, type]))
 	}
-	lexemValidateFix(lexem)
+	lexemTypeValidateFix(type)
 	return lexem
 }
 

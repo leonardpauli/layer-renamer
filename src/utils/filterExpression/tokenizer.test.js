@@ -12,14 +12,15 @@ import {flags, expand} from './lexemUtils'
 const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
 
 // TODO: make custom matcher
-const _testTokens = (tokens, targets)=> {
+const _testTokens = (tokens_, targets)=> {
+	const tokens = tokens_.filter(t=> t.match)
 	expect(tokens).toHaveLength(targets.length)
 	tokens.some((to, i)=> {
 		const [match0, name, location] = targets[i]
 		expect(to.match[0]).toBe(match0)
-		name && expect(to.lexem.name).toBe(name)
-		location && expect(to.lexem.location).toEqual(location)
-		expect(to.lexem.matched).toBe(true)
+		name && expect(to.type.name).toBe(name)
+		location && expect(to.location).toEqual(location)
+		expect(to.matched).toBe(true)
 		return false
 	})
 }
@@ -75,18 +76,18 @@ describe('optional', ()=> {
 	it('a?', ()=> {
 		const root = objr(({a})=> ({
 			a: {regex: /^a/},
-			lexems: [{...a, optional}],
+			lexems: [{type: a, optional}],
 		})); expand(root)
 		
 		testTokensL(root, 'b', [], {matched: false})
-		testTokensL(root, 'a', [['a', '@.0', {s: 0, e: 1}]])
+		testTokensL(root, 'a', [['a', '@.a', {s: 0, e: 1}]])
 	})
 
 	it('a? & b', ()=> {
 		const root = objr(({a, b})=> ({
 			a: {regex: /^a/},
 			b: {regex: /^b/},
-			lexems: [{...a, optional}, b],
+			lexems: [{type: a, optional}, b],
 		})); expand(root)
 		
 		testTokensL(root, 'a', [])
@@ -97,7 +98,7 @@ describe('optional', ()=> {
 		const root = objr(({a, b})=> ({
 			a: {regex: /^a/},
 			b: {regex: /^b/},
-			lexems: [{...a, optional}, b], usingOr,
+			lexems: [{type: a, optional}, b], usingOr,
 		}))
 		expect(()=> expand(root)).toThrow(/ambiguos.* when usingOr/)
 	})
@@ -107,7 +108,7 @@ describe('repeat', ()=> {
 	it('a+', ()=> {
 		const root = objr(({a})=> ({
 			a: {regex: /^a/},
-			lexems: [{...a, repeat}],
+			lexems: [{type: a, repeat}],
 		})); expand(root)
 		
 		testTokensL(root, 'b', [])
@@ -120,7 +121,7 @@ describe('repeat', ()=> {
 		const root = objr(({a, b})=> ({
 			a: {regex: /^a/},
 			b: {regex: /^b/},
-			lexems: [{...a, repeat}, b],
+			lexems: [{type: a, repeat}, b],
 		})); expand(root)
 		
 		testTokensL(root, 'b', [])
@@ -134,22 +135,22 @@ describe('repeat', ()=> {
 		const root = objr(({a, b})=> ({
 			a: {regex: /^a/},
 			b: {regex: /^b/},
-			lexems: [{...a, repeat}, b], usingOr,
+			lexems: [{type: a, repeat}, b], usingOr,
 		})); expand(root)
 
 		testTokensL(root, 'b', [['b']])
 		testTokensL(root, 'ba', [['b']])
 		testTokensS(root, 'a')
 		testTokensS(root, 'aa')
-		testTokensL(root, 'ab', [['a', '@.0', {s: 0, e: 1}]])
-		testTokensL(root, 'aab', [['a', '@.0', {s: 0, e: 1}], ['a', '@.0', {s: 1, e: 2}]])
+		testTokensL(root, 'ab', [['a', '@.a', {s: 0, e: 1}]])
+		testTokensL(root, 'aab', [['a', '@.a', {s: 0, e: 1}], ['a', '@.a', {s: 1, e: 2}]])
 	})
 
 	it('a & b+', ()=> {
 		const root = objr(({a, b})=> ({
 			a: {regex: /^a/},
 			b: {regex: /^b/},
-			lexems: [a, {...b, repeat}],
+			lexems: [a, {type: b, repeat}],
 		})); expand(root)
 		
 		testTokensL(root, 'b', [])
@@ -164,7 +165,7 @@ describe('repeat', ()=> {
 		const root = objr(({a, b})=> ({
 			a: {regex: /^a/},
 			b: {regex: /^b/},
-			lexems: [a, {...b, repeat}], usingOr,
+			lexems: [a, {type: b, repeat}], usingOr,
 		})); expand(root)
 
 		testTokensL(root, 'b', [['b']])
@@ -183,39 +184,39 @@ describe('repeat optional', ()=> {
 	it('a*', ()=> {
 		const root = objr(({a})=> ({
 			a: {regex: /^a/},
-			lexems: [{...a, repeat, optional}],
+			lexems: [{type: a, repeat, optional}],
 		})); expand(root)
 		
 		testTokensL(root, 'b', [], {matched: false})
-		testTokensL(root, 'a', [['a', '@.0', {s: 0, e: 1}]])
-		testTokensL(root, 'aa', [['a', '@.0', {s: 0, e: 1}], ['a', '@.0', {s: 1, e: 2}]])
+		testTokensL(root, 'a', [['a', '@.a', {s: 0, e: 1}]])
+		testTokensL(root, 'aa', [['a', '@.a', {s: 0, e: 1}], ['a', '@.a', {s: 1, e: 2}]])
 	})
 	it('a* & b', ()=> {
 		const root = objr(({a, b})=> ({
 			a: {regex: /^a/},
 			b: {regex: /^b/},
-			lexems: [{...a, repeat, optional}, b],
+			lexems: [{type: a, repeat, optional}, b],
 		})); expand(root)
 		
 		testTokensL(root, 'b', [['b']])
 		testTokensL(root, 'a', [])
 		testTokensL(root, 'aa', [])
 		testTokensL(root, 'ab', [['a'], ['b', '@.b', {s: 1, e: 2}]])
-		testTokensL(root, 'aab', [['a'], ['a', '@.0', {s: 1, e: 2}], ['b']])
+		testTokensL(root, 'aab', [['a'], ['a', '@.a', {s: 1, e: 2}], ['b']])
 	})
 
 	it('a & b*', ()=> {
 		const root = objr(({a, b})=> ({
 			a: {regex: /^a/},
 			b: {regex: /^b/},
-			lexems: [a, {...b, repeat, optional}],
+			lexems: [a, {type: b, repeat, optional}],
 		})); expand(root)
 		
 		testTokensL(root, 'b', [])
 		testTokensL(root, 'a', [['a']])
 		testTokensL(root, 'aa', [['a']])
 		testTokensL(root, 'ab', [['a'], ['b']])
-		testTokensL(root, 'abb', [['a'], ['b'], ['b', '@.1', {s: 2, e: 3}]])
+		testTokensL(root, 'abb', [['a'], ['b'], ['b', '@.b', {s: 2, e: 3}]])
 	})
 })
 
@@ -264,7 +265,7 @@ describe('nested', ()=> {
 			a: {regex: /^a/},
 			b: {regex: /^b/},
 			inner: {lexems: [a, b], usingOr},
-			lexems: [{...inner, repeat, optional}],
+			lexems: [{type: inner, repeat, optional}],
 		})); expand(root)
 
 		it('(a | b)* // first', ()=> {
@@ -283,7 +284,7 @@ describe('nested', ()=> {
 			b: {regex: /^b/},
 			c: {regex: /^c/},
 			inner: {lexems: [a, b], usingOr},
-			outer: {lexems: [{...inner, repeat, optional}, c]},
+			outer: {lexems: [{type: inner, repeat, optional}, c]},
 			lexems: [outer],
 		})); expand(root)
 		

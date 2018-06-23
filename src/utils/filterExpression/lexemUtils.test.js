@@ -41,17 +41,17 @@ describe('lexem expand', ()=> {
 	})
 	it('unwraps [lexem, flags] -> {...}', ()=> {
 		const root = {a: {regex: /^a/}}
-		root.lexems = [[root.a, {optional}], {lexems: [
-			[{regex: /^b/, description: 'inner'}, {optional}], {regex: /^c/}]}]
+		root.lexems = [{type: root.a, optional}, {lexems: [
+			{type: {regex: /^b/, description: 'inner'}, optional}, {regex: /^c/}]}]
 		expand(root)
 		
-		expect(root.lexems[0].name).toBe('@.a')
-		expect(root.lexems[0].extends[0]).toBe(root.a)
-		expect(root.lexems[0].optional).toBe(true)
+		expect(root.type.lexems[0].type.name).toBe('@.a')
+		expect(root.type.lexems[0].type).toBe(root.a)
+		expect(root.type.lexems[0].optional).toBe(true)
 
-		expect(root.lexems[1].lexems[0].name).toBe('@.1.0')
-		expect(root.lexems[1].lexems[0].extends[0].description).toBe('inner')
-		expect(root.lexems[1].lexems[0].optional).toBe(true)
+		expect(root.type.lexems[1].type.lexems[0].type.name).toBe('@.1.0')
+		expect(root.type.lexems[1].type.lexems[0].type.description).toBe('inner')
+		expect(root.type.lexems[1].type.lexems[0].optional).toBe(true)
 	})
 	// TODO: use sticky match (regex flag y + regex.lastIndex) so "^" isn't needed all the time
 })

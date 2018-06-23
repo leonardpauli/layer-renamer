@@ -6,7 +6,7 @@
 
 import {log} from 'string-from-object'
 import lexemRoot from './lexems'
-import {lexemCopyClean1Level} from './tokenizer'
+import {lexemExtendCopyClean1Level} from './tokenizer'
 
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
 
@@ -26,7 +26,7 @@ const valueEq = (a, b)=> a==b
 
 
 export const exprCtxDefaultGet = ()=> ({
-	lexem: lexemCopyClean1Level(lexemRoot.expr),
+	lexem: lexemExtendCopyClean1Level(lexemRoot.expr),
 	vars: {},
 })
 const parseStrCtxGet = (ctx = {})=> ({...exprCtxDefaultGet(), ...ctx})
