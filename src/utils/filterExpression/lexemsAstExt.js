@@ -31,9 +31,7 @@ text.close.astTokenNot = true
 paren.astValueGet = (ctx, t)=> astify(ctx, t.tokens.find(t=> t.type === expr))
 expr.astValueGet = (ctx, t)=> tokensGroupPrio(ctx, t, t.type.lexemsAstTypes)
 expr.lexems[1].type.astValueGet = (ctx, t)=> astify(ctx, t.tokens.find(t=> t.type === expr.single))
-expr.single.astValueGet = (ctx, t)=> t.tokens.length==1
-	? astify(ctx, t.tokens[0])
-	: handleUnhandled(t, {from: 'expr.single.astValueGet', t, err: 'expr len'})
+expr.single.astValueGet = (ctx, t)=> astify(ctx, t.tokens[0])
 
 sp.astValueGet = t=> null
 

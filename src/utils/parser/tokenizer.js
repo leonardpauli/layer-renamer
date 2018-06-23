@@ -9,19 +9,19 @@ import {log} from 'string-from-object'
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
 
 
-export const tokenizePart = (ctx, str)=> {
-	const state = {}
-	const path = [...tokenize(ctx, str, state)]; const {restStr} = state
-	// if (restStr===str) throw new Error(`Path "${restStr}" isn't valid path`)
-	return {path, restStr}
-}
+// export const tokenizePart = (ctx, str)=> {
+// 	const state = {}
+// 	const path = [...tokenize(ctx, str, state)]; const {restStr} = state
+// 	// if (restStr===str) throw new Error(`Path "${restStr}" isn't valid path`)
+// 	return {path, restStr}
+// }
 
-export const tokenize = function* tokenize (ctx, str, state = {}) {
-	state.restStr = str; let item
-	while (state.restStr && ({item, restStr: state.restStr} =
-		tokenizeNext(ctx, state.restStr), item)) yield item
-	return state.restStr
-}
+// export const tokenize = function* tokenize (ctx, str, state = {}) {
+// 	state.restStr = str; let item
+// 	while (state.restStr && ({item, restStr: state.restStr} =
+// 		tokenizeNext(ctx, state.restStr), item)) yield item
+// 	return state.restStr
+// }
 
 export const config = {tokenizeNextMaxIterations: 100000}
 // eslint-disable-next-line max-statements
@@ -58,8 +58,8 @@ export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 
 		// get block
 		const bi = bs.length-1
-		if (bi >= bs.length || bi >= lis.length+1) throw new Error( // TODO: shouldn't happen, remove
-			`bi >= bs.length (${bi} >= ${bs.length}) || bi >= lis.length+1`)
+		// if (bi >= bs.length || bi >= lis.length+1) throw new Error( // TODO: shouldn't happen, remove
+		// 	`bi >= bs.length (${bi} >= ${bs.length}) || bi >= lis.length+1`)
 		const b = bs[bi]
 
 		// get lexem index + starting on new block
@@ -72,7 +72,7 @@ export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 
 			b.tokens = []
 
-			if (b.type.lexems) {
+			if (b.type.lexems) { // TODO: test code branch?
 				b.lexems = b.type.lexems.map(lexemExtendCopyClean1Level)
 				b.matched = !b.type.usingOr // set matched var default state
 			}
@@ -85,8 +85,8 @@ export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 			bNextDo(bs, lis)
 			continue
 		}
-		if (li > ls.length) throw new Error( // TODO: shouldn't happen, remove
-			`li > ls.length (${li} > ${ls.length})`)
+		// if (li > ls.length) throw new Error( // TODO: shouldn't happen, remove
+		// 	`li > ls.length (${li} > ${ls.length})`)
 		const l = ls[li]
 
 		// TODO: yield tokens when as soon as decided
@@ -113,7 +113,7 @@ export const tokenizeNextCore = (ctx, str)=> { // ctx = {lexem}
 				l.type.retain===true ? match[0].length
 			: l.type.retain>=0 ? l.type.retain
 			: Math.max(0, match[0].length + l.type.retain)
-		if (isNaN(retainLength)) throw new Error(
+		if (isNaN(retainLength)) throw new Error( // TODO: shouldn't happen, remove
 			`invalid lexem, forgot to run root through lexemUtils.expand?`)
 		l.location.e = l.location.s + retainLength
 		// log({lo:l.location.s, retainLength, match, r: l.retain})
@@ -143,9 +143,9 @@ export const lexemExtendCopyClean1Level = l=> ({
 	tokens: void 0, lexems: void 0,
 })
 
-const safeToYieldGet = bs=> !bs
-	.filter((v, i)=> i <= bs.length-1)
-	.some(b=> !b.type.usingOr) // TODO: should also be ok if rest lexems in an usingAnd is optional
+// const safeToYieldGet = bs=> !bs
+// 	.filter((v, i)=> i <= bs.length-1)
+// 	.some(b=> !b.type.usingOr) // TODO: should also be ok if rest lexems in an usingAnd is optional
 
 
 // logic subs
