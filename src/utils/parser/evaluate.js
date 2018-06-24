@@ -16,16 +16,27 @@ export const evaluate = (ctx, t, args)=> t.evalValue =
 		t.evalValue !== void 0 ? t.evalValue
 	: t.astId.evaluate ? t.astId.evaluate(ctx, t, args)
 	: t.type.evaluate ? t.type.evaluate(ctx, t, args)
-	: null
+	: (ctx.errors.push({message: 'missing evaluate handler', t, args}), null)
 
 
 // helpers
 
 export const evaluateStr = (ctx, str)=> {
-	tokenizeNextCore(ctx, str)
+	let tokenizeOk = true
+	try {
+		tokenizeNextCore(ctx, str)
+	} catch (err) { tokenizeOk = false; ctx.errors.push({message: 'during tokenize', err}) }
+	if (!tokenizeOk) return ctx
+	// TODO: reset ctx.(lexem, value)?
 	if (ctx.lexem.matched) {
-		astify(ctx, ctx.lexem)
-		ctx.value = evaluate(ctx, ctx.lexem)
+		let astifyOk = true
+		let evaluatOk = true
+		try {
+			astify(ctx, ctx.lexem)
+		} catch (err) { astifyOk = false; ctx.errors.push({message: 'during astify', err}) }
+		if (astifyOk) try {
+			ctx.value = evaluate(ctx, ctx.lexem)
+		} catch (err) { evaluatOk = false; ctx.errors.push({message: 'during evaluatOk', err}) }
 	}
 	ctx.restStr = str.substr(ctx.lexem.location.e)
 	return ctx

@@ -69,8 +69,8 @@ const astTokensSet = token=> {
 
 
 // TODO: return required root.error lexem instead with tokens + org lexem attached?
-export const handleUnhandled = (token, rest)=>
-	log({err: 'astify unhandled token', token, ...rest}, 3) || null
+export const handleUnhandled = (ctx, token, rest)=>
+	(ctx.errors.push({message: 'astify unhandled token', token, ...rest}), null)
 
 
 // astify
@@ -82,8 +82,8 @@ const astidPlaceholder = {name: 'astify.placeholder'}
 export const astify = (ctx, token)=> {
 	if (!token) throw new Error(`no token passed to astify`)
 	if (token.astValue!==void 0) return token.astValue
-	if (!token.type.astValueGet) return token.astValue = handleUnhandled(token, {
-		from: 'astify', err: 'astValueGet missing'})
+	if (!token.type.astValueGet) return token.astValue = handleUnhandled(ctx, token, {
+		from: 'astify', message: 'astValueGet missing'})
 	
 	token.astId = token.astId || astidPlaceholder
 	token.astValue = token.type.astValueGet(ctx, token)

@@ -16,4 +16,5 @@ export const evaluateStr = (str, ctx = exprCtxDefaultGet())=> evaluateStr_(ctx, 
 export const exprCtxDefaultGet = ()=> ({
 	lexem: lexemExtendCopyClean1Level(root.expr),
 	vars: {},
+	errors: [],
 })

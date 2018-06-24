@@ -21,9 +21,13 @@ const root = stupidIterativeObjectDependencyResolve(({
 	lexems, paren, num, sp, spo, expr, text, dot, comma, id,
 })=> ({
 	paren: {
-		lexems: [paren.open, spo, expr, spo, {type: paren.close, optional}], // TODO: autoInsertIfNeeded instead
+		lexems: [paren.open, spo, {type: expr, optional}, spo, {type: paren.close, optional}], // TODO: autoInsertIfNeeded instead
 		open: {regex: /^\(/},
 		close: {regex: /^\)/},
+		// empty: {
+		// 	lexems: [paren.open, spo, {type: paren.close, optional}],
+		// 	description: 'used as empty list literal',
+		// },
 	},
 	num: {regex: /^[1-9][0-9]*(\.[0-9]+)?/, description: 'number'},
 	sp: {regex: /^[\t ]+/, description: 'space-horizontal (optional for formatting / min 1 req for separation / elastic tab for alignment)'},
@@ -36,8 +40,8 @@ const root = stupidIterativeObjectDependencyResolve(({
 				num,
 				text,
 				paren,
-				id,
 				id.strip,
+				id,
 				id.special,
 			],
 		},

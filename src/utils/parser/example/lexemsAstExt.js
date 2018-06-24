@@ -7,7 +7,7 @@
 // - lexems Abstract Syntax Tree extensions
 
 import sfo, {log} from 'string-from-object'
-import {handleUnhandled, astify, tokensGroupPrio} from '../aster'
+import {astify, tokensGroupPrio} from '../aster'
 import {astidsExpand, lexemsAstTypesExpand} from '../lexemUtils'
 import root from './lexems'
 
@@ -31,7 +31,6 @@ paren.astValueGet = (ctx, t)=> astify(ctx, t.tokens.find(t=> t.type === expr))
 expr.astValueGet = (ctx, t)=> tokensGroupPrio(ctx, t, t.type.lexemsAstTypes)
 expr.lexems[1].type.astValueGet = (ctx, t)=> astify(ctx, t.tokens.find(t=> t.type === expr.single))
 expr.single.astValueGet = (ctx, t)=> astify(ctx, t.tokens[0])
-// t.tokens.length!=1 ? handleUnhandled(t, {from: 'expr.single.astValueGet', t, err: 'expr len'})
 
 sp.astValueGet = t=> null
 

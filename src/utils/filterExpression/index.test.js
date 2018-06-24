@@ -43,24 +43,61 @@ describe('tokenize', ()=> {
 	})
 })
 
+const testManyGet = evaluateStr=> tests=> Object.keys(tests).forEach(k=> it(k, ()=> {
+	const ctx = evaluateStr(k)
+	if (!Array.isArray(tests[k])) {
+		const {toerror} = tests[k]
+		expect(ctx.errors).toHaveLength(1)
+		expect(ctx.errors[0].message).toMatch(toerror)
+		return
+	}
+	const {value, restStr} = ctx
+	const [valuet, restStrt] = tests[k]
+	if (ctx.errors.length) {
+		log(ctx.errors, 5)
+		logAstValue(ctx.lexem)
+		expect(ctx.errors.length*1).toBe(0)
+	}
+	try {
+		expect(value).toEqual(valuet)
+		restStrt !== void 0 && expect(restStr).toBe(restStrt)
+	} catch (err) {
+		// log({k, ctx}, 3)
+		throw err
+	}
+}))
+
 describe('evaluate', ()=> {
+	const testMany = testManyGet(s=> {
+		const ctx = exprCtxDefaultGet()
+		ctx.vars.name = 'Leo'
+		ctx.vars.a = {b: {c: 'itsa c'}}
+		return evaluateStr(s, ctx)
+	})
 	// tokenizeNextCore(ctx, '"hel\\(add (55, 3, 7) rr)lo"')
 	// ctx.vars.str = 'hello'
 	// ctx.vars.add = '+++'
-	const tests = {
+	describe('simple math', ()=> testMany({
 		'1': [1],
-		'2+3': [5],
 		' 2 + 3': [void 0, ' 2 + 3'],
-		'2 + 3': [5],
-		'2*3+4': [10],
-		'2+3*4': [14],
-		'(2+3)*4': [20],
-		'( (3 * (4) + 2) )': [14],
-	}
-	Object.keys(tests).forEach(k=> it(k, ()=> {
-		const {value, restStr} = evaluateStr(k)
-		const [valuet, restStrt] = tests[k]
-		expect(value).toBe(valuet)
-		restStrt !== void 0 && expect(restStr).toBe(restStrt)
+		'( (3 * ((4) + 2) - 1) )': [17],
+	}))
+
+	describe('simple text', ()=> testMany({
+		'"1"': ['1'],
+		'"hello"': ['hello'],
+		'(33)': [33],
+		'()': [[]],
+		'"\\()"': [''],
+		'"\\(33)"': ['33'],
+		'"he\\(33)llo"': ['he33llo'],
+		'"he\\(33+7)llo" + "hi"': ['he40llohi'],
+		'"he\\(33+7)llo" + "hi" = "he40llohi"': [true],
+		'"he\\(33+7)llo" + "hi" = "he40llohio"': [false],
+		'"Hi \\(name)!"': ['Hi Leo!'],
+		'"Hi \\(namea)!"': {toerror: /undefined.*namea/},
+		'a.b.c': ['itsa c'],
+		'a.c.d': {toerror: /undefined.*c/}, // or d?
+		// 'name in ("a", "b", "c")': ['Hi Leo!'],
 	}))
 })
