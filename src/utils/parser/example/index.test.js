@@ -5,12 +5,9 @@
 // copyright © Leonard Pauli 2018
 
 import sfo, {log} from 'string-from-object'
-
-import {tokenizeNextCore} from '../tokenizer'
 import {testTokenizeStr, logAstValue} from '../testUtils'
-import {astify} from '../aster'
 
-import {evaluate, exprCtxDefaultGet} from '.'
+import {evaluateStr, exprCtxDefaultGet} from '.'
 
 
 describe('tokenize', ()=> {
@@ -20,16 +17,18 @@ describe('tokenize', ()=> {
 })
 
 describe('evaluate', ()=> {
-	it('some asta', ()=> {
-		const ctx = exprCtxDefaultGet()
-		// tokenizeNextCore(ctx, '(1 + 3) * 2')
-		tokenizeNextCore(ctx, '( (3 * (4) + 2) )')
-		// tokenizeNextCore(ctx, '1 + 3 * 2')
-		ctx.vars.str = 'hello'
-		ctx.vars.add = '+++'
-		const r = astify(ctx, ctx.lexem)
-		logAstValue(r, 15)
-		log(evaluate(ctx, ctx.lexem))
-		// log(evaluate(ctx, tokens[0]))
-	})
+	const tests = {
+		'1': 1,
+		'2+3': 5,
+		' 2 + 3': void 0,
+		'2 + 3': 5,
+		'2*3+4': 10,
+		'2+3*4': 14,
+		'(2+3)*4': 20,
+		'( (3 * (4) + 2) )': 14,
+	}
+	Object.keys(tests).forEach(k=> it(k, ()=> {
+		const {value, restStr} = evaluateStr(k)
+		expect(value).toBe(tests[k])
+	}))
 })

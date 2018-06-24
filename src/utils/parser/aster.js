@@ -24,7 +24,7 @@ export const tokensGroupPrio = (ctx, token, lexemsAstTypes)=> {
 const tsGPInner = (token, astTokens)=> {
 	const vs = astTokens
 	if (vs.length == 1) return vs[0]
-	if (vs.length == 0) return null // TODO: unnecessary? remove or test code branch
+	if (vs.length == 0) return null
 
 	const ordered = vs.slice().sort((a, b)=> a.astId.prio-b.astId.prio)
 	const [mid] = ordered

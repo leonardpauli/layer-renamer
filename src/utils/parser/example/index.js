@@ -6,12 +6,12 @@
 
 import {log} from 'string-from-object'
 import {lexemExtendCopyClean1Level} from '../lexemUtils'
-import {evaluate} from '../evaluate'
+import {evaluateStr as evaluateStr_} from '../evaluate'
 
 import root from './lexems'
 import './lexemsEvalExt'
 
-export {evaluate}
+export const evaluateStr = (str, ctx = exprCtxDefaultGet())=> evaluateStr_(ctx, str)
 
 export const exprCtxDefaultGet = ()=> ({
 	lexem: lexemExtendCopyClean1Level(root.expr),

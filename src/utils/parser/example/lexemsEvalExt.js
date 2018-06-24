@@ -4,6 +4,7 @@
 // created by Leonard Pauli, jun 2018
 // copyright © Leonard Pauli 2018
 
+import {log} from 'string-from-object'
 import {evaluate} from '../evaluate'
 
 import root from './lexems'
