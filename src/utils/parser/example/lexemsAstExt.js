@@ -8,6 +8,7 @@
 
 import sfo, {log} from 'string-from-object'
 import {handleUnhandled, astify, tokensGroupPrio} from '../aster'
+import {astidsExpand, lexemsAstTypesExpand} from '../lexemUtils'
 import root from './lexems'
 
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
@@ -54,7 +55,7 @@ export const astids = {
 	div: {is: ({type: t, astValue: v})=> t===id.special && v==='/', infix},
 
 	other: {is: ()=> true, prefix},
-}; Object.keys(astids).map(k=> astids[k].name = astids[k].name || k)
+}; astidsExpand(astids)
 
 root.expr.lexemsAstTypes = [ // order sets priority, + ability to have this dynamic? eg. add entry from language
 	astids.plus,
@@ -63,4 +64,4 @@ root.expr.lexemsAstTypes = [ // order sets priority, + ability to have this dyna
 	astids.div,
 	
 	astids.other,
-]; root.expr.lexemsAstTypes.forEach((p, i)=> p.prio = i) // TODO: do in lexems ast pre-processor?
+]; lexemsAstTypesExpand(root.expr.lexemsAstTypes)

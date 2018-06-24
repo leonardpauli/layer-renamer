@@ -18,17 +18,19 @@ describe('tokenize', ()=> {
 
 describe('evaluate', ()=> {
 	const tests = {
-		'1': 1,
-		'2+3': 5,
-		' 2 + 3': void 0,
-		'2 + 3': 5,
-		'2*3+4': 10,
-		'2+3*4': 14,
-		'(2+3)*4': 20,
-		'( (3 * (4) + 2) )': 14,
+		'1': [1],
+		'2+3': [5],
+		' 2 + 3': [void 0, ' 2 + 3'],
+		'2 + 3': [5],
+		'2*3+4': [10],
+		'2+3*4': [14],
+		'(2+3)*4': [20],
+		'( (3 * (4) + 2) )': [14],
 	}
 	Object.keys(tests).forEach(k=> it(k, ()=> {
 		const {value, restStr} = evaluateStr(k)
-		expect(value).toBe(tests[k])
+		const [valuet, restStrt] = tests[k]
+		expect(value).toBe(valuet)
+		restStrt !== void 0 && expect(restStr).toBe(restStrt)
 	}))
 })

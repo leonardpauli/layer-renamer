@@ -70,9 +70,6 @@ const root = stupidIterativeObjectDependencyResolve(({
 	lexems: [expr],
 }), {n: 3})
 
-
-// TODO: expand (fn -> obj, name, validate) + test
-// log(root, 17, {indentation: '  ', nameExtractor: ()=> null})
 expand(root)
-// log(root, {indentation: '  '})
+
 export default root

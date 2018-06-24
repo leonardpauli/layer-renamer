@@ -124,3 +124,9 @@ export const expand = root=> {
 	// intermediate lexems = named through recursivelyAddNameToLexems
 	// all lexems = state.named + intermediate lexems
 }
+
+
+// TODO: do in lexems ast pre-processor?
+export const astidsExpand = astids=>
+	Object.keys(astids).map(k=> astids[k].name = astids[k].name || k)
+export const lexemsAstTypesExpand = types=> types.forEach((p, i)=> p.prio = i)

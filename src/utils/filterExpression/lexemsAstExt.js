@@ -4,10 +4,12 @@
 // created by Leonard Pauli, jun 2018
 // copyright © Leonard Pauli 2018
 //
+// - lexems Abstract Syntax Tree extensions
 // based on rim / towards rim
 
 import sfo, {log} from 'string-from-object'
 import {handleUnhandled, astify, tokensGroupPrio} from '../parser/aster'
+import {astidsExpand, lexemsAstTypesExpand} from '../parser/lexemUtils'
 import root from './lexems'
 
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
@@ -37,21 +39,14 @@ sp.astValueGet = t=> null
 
 id.astValueGet = (ctx, t)=> t.match[0]
 id.special.astValueGet = id.astValueGet
-id.strip.astValueGet = (ctx, t)=> t.tokens.map(t=>
-		t.type === dot ? null
-	: t.type === id ? t.match[0]
-	: astify(ctx, t)
-).filter(a=> a!==null)
+id.strip.astValueGet = (ctx, t)=> t.tokens.filter(t=> t.type !== dot).map(t=> astify(ctx, t))
 
 num.astValueGet = (ctx, t)=> Number(t.match[0])
 
+text.raw.astValueGet = (ctx, t)=> t.match[0]
 text.astValueGet = (ctx, t)=> concat(t.tokens
 	.filter(t=> t.type === text.inner)
-	.map(l=> l.tokens.map(t=>
-			t.type === text.raw ? [t, t.match[0]]
-		: t.type === text.expr ? astify(ctx, t.tokens.find(t=> t.type === paren))
-		: handleUnhandled(t, {from: 'text.astValueGet inner', t})
-	)))
+	.map(t=> t.tokens.map(t=> astify(ctx, t))))
 
 
 // lexemsAstTypes definition
@@ -59,7 +54,7 @@ text.astValueGet = (ctx, t)=> concat(t.tokens
 const infix = true
 const prefix = true
 
-const astids = {
+export const astids = {
 	comma: {is: ({type: t, astValue: v})=> t===id.special && v===',', infix},
 	
 	plus: {is: ({type: t, astValue: v})=> t===id.special && v==='+', infix},
@@ -68,7 +63,7 @@ const astids = {
 	div: {is: ({type: t, astValue: v})=> t===id.special && v==='/', infix},
 
 	other: {is: ()=> true, prefix},
-}; Object.keys(astids).map(k=> astids[k].name = astids[k].name || k)
+}; astidsExpand(astids)
 
 root.expr.lexemsAstTypes = [
 	astids.comma,
@@ -79,4 +74,4 @@ root.expr.lexemsAstTypes = [
 	astids.div,
 	
 	astids.other,
-]; root.expr.lexemsAstTypes.forEach((p, i)=> p.prio = i)
+]; lexemsAstTypesExpand(root.expr.lexemsAstTypes)
