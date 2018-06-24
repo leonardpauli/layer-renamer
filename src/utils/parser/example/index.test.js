@@ -5,7 +5,7 @@
 // copyright © Leonard Pauli 2018
 
 import sfo, {log} from 'string-from-object'
-import {testTokenizeStr, logAstValue} from '../testUtils'
+import {testTokenizeStr, logAstValue, testManyGet} from '../testUtils'
 
 import {evaluateStr, exprCtxDefaultGet} from '.'
 
@@ -17,7 +17,8 @@ describe('tokenize', ()=> {
 })
 
 describe('evaluate', ()=> {
-	const tests = {
+	const testMany = testManyGet(evaluateStr)
+	testMany({
 		'1': [1],
 		'2+3': [5],
 		' 2 + 3': [void 0, ' 2 + 3'],
@@ -26,11 +27,5 @@ describe('evaluate', ()=> {
 		'2+3*4': [14],
 		'(2+3)*4': [20],
 		'( (3 * (4) + 2) )': [14],
-	}
-	Object.keys(tests).forEach(k=> it(k, ()=> {
-		const {value, restStr} = evaluateStr(k)
-		const [valuet, restStrt] = tests[k]
-		expect(value).toBe(valuet)
-		restStrt !== void 0 && expect(restStr).toBe(restStrt)
-	}))
+	})
 })

@@ -34,3 +34,28 @@ const logAstValuePlain = custom({
 		&& !'optional,repeat,tokens,lexems,location,match,matched,astTokens'.split(',').includes(key),
 })
 export const logAstValue = (...args)=> console.log(logAstValuePlain(...args))
+
+
+export const testManyGet = evaluateStr=> tests=> Object.keys(tests).forEach(k=> it(k, ()=> {
+	const ctx = evaluateStr(k)
+	if (!Array.isArray(tests[k])) {
+		const {toerror} = tests[k]
+		expect(ctx.errors).toHaveLength(1)
+		expect(ctx.errors[0].message).toMatch(toerror)
+		return
+	}
+	const {value, restStr} = ctx
+	const [valuet, restStrt] = tests[k]
+	if (ctx.errors.length) {
+		log(ctx.errors, 5)
+		logAstValue(ctx.lexem)
+		expect(ctx.errors.length*1).toBe(0)
+	}
+	try {
+		expect(value).toEqual(valuet)
+		restStrt !== void 0 && expect(restStr).toBe(restStrt)
+	} catch (err) {
+		// log({k, ctx}, 3)
+		throw err
+	}
+}))

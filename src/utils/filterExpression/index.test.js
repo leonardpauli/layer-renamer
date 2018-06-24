@@ -6,7 +6,7 @@
 
 import sfo, {log} from 'string-from-object'
 
-import {testTokenizeStr, logAstValue} from '../parser/testUtils'
+import {testTokenizeStr, logAstValue, testManyGet} from '../parser/testUtils'
 import {expand} from '../parser/lexemUtils'
 
 import {evaluateStr, exprCtxDefaultGet} from '.'
@@ -43,30 +43,6 @@ describe('tokenize', ()=> {
 	})
 })
 
-const testManyGet = evaluateStr=> tests=> Object.keys(tests).forEach(k=> it(k, ()=> {
-	const ctx = evaluateStr(k)
-	if (!Array.isArray(tests[k])) {
-		const {toerror} = tests[k]
-		expect(ctx.errors).toHaveLength(1)
-		expect(ctx.errors[0].message).toMatch(toerror)
-		return
-	}
-	const {value, restStr} = ctx
-	const [valuet, restStrt] = tests[k]
-	if (ctx.errors.length) {
-		log(ctx.errors, 5)
-		logAstValue(ctx.lexem)
-		expect(ctx.errors.length*1).toBe(0)
-	}
-	try {
-		expect(value).toEqual(valuet)
-		restStrt !== void 0 && expect(restStr).toBe(restStrt)
-	} catch (err) {
-		// log({k, ctx}, 3)
-		throw err
-	}
-}))
-
 describe('evaluate', ()=> {
 	const testMany = testManyGet(s=> {
 		const ctx = exprCtxDefaultGet()
@@ -74,9 +50,7 @@ describe('evaluate', ()=> {
 		ctx.vars.a = {b: {c: 'itsa c'}}
 		return evaluateStr(s, ctx)
 	})
-	// tokenizeNextCore(ctx, '"hel\\(add (55, 3, 7) rr)lo"')
-	// ctx.vars.str = 'hello'
-	// ctx.vars.add = '+++'
+
 	describe('simple math', ()=> testMany({
 		'1': [1],
 		' 2 + 3': [void 0, ' 2 + 3'],

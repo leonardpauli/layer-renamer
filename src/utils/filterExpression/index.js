@@ -11,6 +11,7 @@ import {evaluateStr as evaluateStr_} from '../parser/evaluate'
 import root from './lexems'
 import './lexemsEvalExt'
 
+export {root}
 export const evaluateStr = (str, ctx = exprCtxDefaultGet())=> evaluateStr_(ctx, str)
 
 export const exprCtxDefaultGet = ()=> ({

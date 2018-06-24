@@ -115,8 +115,9 @@ export const parseRelativePathStr = function* parseRelativePathStr (str, state =
 	return state.restStr
 }
 
+export const relativePathTokenRegex = /^(([<>])|((\d+n)([+-]?\d+)?)|(([+-])?\d+))/
 const parseRelativePathStrNext = str=> {
-	const match = str.match(/^(([<>])|((\d+n)([+-]?\d+)?)|(([+-])?\d+))/)
+	const match = str.match(relativePathTokenRegex)
 	if (!match) return {item: null, restStr: str}
 	const [
 		whole,
