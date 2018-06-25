@@ -118,7 +118,7 @@ export const expand = root=> {
 	if (Array.isArray(root)) throw new Error(
 		`expand got array lexem, expected object, please wrap like {lexems: [<array-lexem>]}`)
 	const state = {named: new Set(), noname: new Set()}
-	_process(root, '@', null, state)
+	_process(root, root.name || '@', null, state)
 	state.noname.forEach(([lexem, k, parent])=> parent.lexems[k] =
 		recursivelyFixNestedLexems([lexem, k, parent]))
 	// intermediate lexems = named through recursivelyAddNameToLexems

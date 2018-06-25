@@ -1,14 +1,13 @@
-// nodesFindUsingPathExpression/syntax.js
+// regularExpression/syntax.js
 // LayerRenamer
 //
-// created by Leonard Pauli, jun 2018
+// created by Leonard Pauli, 25 jun 2018
 // copyright © Leonard Pauli 2018
 
 import {log} from 'string-from-object'
 import {stupidIterativeObjectDependencyResolve} from '../object'
 import {relativePathTokenRegex} from '../nodesAtRelativePath'
 import {root as filterExpression} from '../filterExpression'
-import {root as regexp} from '../regularExpression/syntax'
 
 import {astidsExpand, flags, expand} from '../parser/lexemUtils'
 import {evaluate} from '../parser/evaluate'
@@ -22,17 +21,16 @@ const {optional, repeat, usingOr} = flags
 // lexems definition
 
 const root = stupidIterativeObjectDependencyResolve(({
-	step, path, sp, spo,
+	step, path, regexp, sp, spo,
 })=> ({
-	sp: {regex: /^[\t ]+/, description: 'space-horizontal'},
-	spo: {type: sp, optional},
-	step: {lexems: [regexp, filterExpression.paren, path], usingOr},
-	regexp,
-	path: {
-		lexems: [{type: path.step, repeat}],
-		step: {regex: relativePathTokenRegex},
-	},
-	lexems: [{type: step, repeat}],
+	name: 'regexp',
+	open: {regex: /^\//},
+	close: {regex: /^\//},
+	flags: {regex: /^[gmsiyu]{1,6}/},
+	escaped: 
+	step: {},
+	regexp: {regex: /^\/(\\.|[^\\])*\/([a-z]+)?/},
+	lexems: [open, {type: step, repeat}, close, {type: flags, optional}],
 }), {n: 3})
 
 expand(root)

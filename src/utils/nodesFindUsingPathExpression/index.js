@@ -10,7 +10,9 @@ import {evaluateStr as evaluateStr_} from '../parser/evaluate'
 import root from './syntax'
 
 // TODO:
-// /regex \/ more .* regex (matchgroup 1.1) \\/g>1n+2(color = "red")>/hello (matchgroup 0.1)/
+// - change syntax:
+// 	to: full-name > other-name-directly-inside :2n+1 (color="red") > /part name/ >* some-fullname-somewhere-inside
+// 	old: /regex \/ more .* regex (matchgroup 1.1) \\/g>1n+2(color = "red")>/hello (matchgroup 0.1)/
 // 	- matchgroups are reversed
 // 	- opacity .5 unparsed restStr if any
 // 	- syntax highlight :)
