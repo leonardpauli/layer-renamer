@@ -7,6 +7,16 @@
 //   see "CC-BY-SA 2.5": https://creativecommons.org/licenses/by-sa/2.5/
 
 
+// charbycode.controlchar.data = { title: 'Control Character', example: '/\\cM/ matches control-M (U+000D) in a string.' }
+// charbycode.nullchar.data = { title: 'NULL (U+0000) character', note: 'Do not follow this with another digit, because \\0<digits> is an octal escape sequence. Instead use \\x00.' }},
+// charbycode.hexa2char.data = { title: 'Character (hexadecimal code)' },
+// charbycode.hexa4char.data = { title: 'Character (hexadecimal code)' },
+// charbycode.unicodechar.data = { title: 'Unicode character (hexadecimal code)', note: '(only when u flag is set)' }},
+// escapedchar.backref.data = { title: 'Back reference',
+// 	note: 'Where n is a positive integer, a back reference to the last substring matching the n parenthetical in the regular expression (counting left parentheses).',
+// 	example: '/apple(,)\\sorange\\1/ matches \'apple, orange,\' in "apple, orange, cherry, peach."' }},
+
+
 export default {
 	default: [
 		{ regex: /^\^/,
@@ -197,6 +207,7 @@ export default {
 			char: 'W',
 			desc: 'Matches any non-word character. Equivalent to [^A-Za-z0-9_].',
 			example: '/\\W/ or /[^A-Za-z0-9_]/ matches \'%\' in "50%."' },
+
 		{ regex: /^\d+/,
 			char: 'n',
 			desc: 'Where n is a positive integer, a back reference to the last substring matching the n parenthetical in the regular expression (counting left parentheses).',

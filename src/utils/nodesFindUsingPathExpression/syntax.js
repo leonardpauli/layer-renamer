@@ -22,16 +22,33 @@ const {optional, repeat, usingOr} = flags
 // lexems definition
 
 const root = stupidIterativeObjectDependencyResolve(({
-	step, path, sp, spo,
+	// sp, spo,
+	colon, achar, backslash, escapedchar,
+	path,
+	filterexp,
+	step, inside,
 })=> ({
-	sp: {regex: /^[\t ]+/, description: 'space-horizontal'},
-	spo: {type: sp, optional},
-	step: {lexems: [regexp, filterExpression.paren, path], usingOr},
-	regexp,
+	// sp: {regex: /^[\t ]+/, description: 'space-horizontal'},
+	// spo: {type: sp, optional},
+	colon: {regex: /^:/},
+
+	achar: {regex: /^[^]/},
+	backslash: {regex: /^\\/},
+	escapedchar: {lexems: [backslash, achar]},
+
 	path: {
-		lexems: [{type: path.step, repeat}],
 		step: {regex: relativePathTokenRegex},
+		stepupdown: {regex: /^([<>])/, retain: -1},
+		start: {lexems: [colon, path.stepupdown]},
+		lexems: [path.start, {type: path.step, repeat}],
 	},
+
+	filterexp: {
+		lexems: [colon, filterExpression.paren],
+	},
+
+	// TODO: join nearby achar, possibly use as regex if enabled, or just match as substr
+	step: {lexems: [escapedchar, filterexp, path, regexp, achar], usingOr},
 	lexems: [{type: step, repeat}],
 }), {n: 3})
 
