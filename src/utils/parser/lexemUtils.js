@@ -23,6 +23,11 @@ export const flags = {
 	repeat: true, // is one or more (+) by default, combine repeat + optional to get 0 or more (*)
 	usingOr: true,
 }
+export const astidFlags = {
+	prefix: true,
+	suffix: true,
+	infix: true,
+}
 
 // TODO: separate type and instance
 

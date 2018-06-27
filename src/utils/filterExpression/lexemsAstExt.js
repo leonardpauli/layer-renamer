@@ -9,7 +9,7 @@
 
 import sfo, {log} from 'string-from-object'
 import {astify, tokensGroupPrio} from '../parser/aster'
-import {astidsExpand, lexemsAstTypesExpand} from '../parser/lexemUtils'
+import {astidsExpand, lexemsAstTypesExpand, astidFlags} from '../parser/lexemUtils'
 import root from './lexems'
 
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
@@ -56,8 +56,7 @@ text.astValueGet = (ctx, t)=> t.tokens
 
 // lexemsAstTypes definition
 
-const infix = true
-const prefix = true
+const {prefix, infix} = astidFlags
 
 export const astids = {
 	comma: {is: ({type: t, astValue: v})=> t===id.special && v===',', infix},

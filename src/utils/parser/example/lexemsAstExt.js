@@ -8,7 +8,7 @@
 
 import sfo, {log} from 'string-from-object'
 import {astify, tokensGroupPrio} from '../aster'
-import {astidsExpand, lexemsAstTypesExpand} from '../lexemUtils'
+import {astidsExpand, lexemsAstTypesExpand, astidFlags} from '../lexemUtils'
 import root from './lexems'
 
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
@@ -42,8 +42,7 @@ num.astValueGet = (ctx, t)=> Number(t.match[0])
 
 // lexemsAstTypes definition
 
-const infix = true
-const prefix = true
+const {prefix, infix} = astidFlags
 // TODO: validate astids schema
 // {is: token=> Boolean, infix/suffix/prefix: true, name: String, prio: Number}
 

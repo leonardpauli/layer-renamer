@@ -8,7 +8,7 @@ import {log} from 'string-from-object'
 import {stupidIterativeObjectDependencyResolve} from '../object'
 import {relativePathTokenRegex} from '../nodesAtRelativePath'
 import {root as filterExpression} from '../filterExpression'
-import {root as regexp} from '../regularExpression/syntax'
+import {root as regexp} from '../regularExpression'
 
 import {astidsExpand, flags, expand} from '../parser/lexemUtils'
 import {evaluate} from '../parser/evaluate'
@@ -22,14 +22,14 @@ const {optional, repeat, usingOr} = flags
 // lexems definition
 
 const root = stupidIterativeObjectDependencyResolve(({
-	// sp, spo,
+	sp, spo,
 	colon, achar, backslash, escapedchar,
 	path,
 	filterexp,
-	step, inside,
+	special, step, inside,
 })=> ({
-	// sp: {regex: /^[\t ]+/, description: 'space-horizontal'},
-	// spo: {type: sp, optional},
+	sp: {regex: /^[\t ]+/, description: 'space-horizontal'},
+	spo: {type: sp, optional},
 	colon: {regex: /^:/},
 
 	achar: {regex: /^[^]/},
@@ -48,7 +48,8 @@ const root = stupidIterativeObjectDependencyResolve(({
 	},
 
 	// TODO: join nearby achar, possibly use as regex if enabled, or just match as substr
-	step: {lexems: [escapedchar, filterexp, path, regexp, achar], usingOr},
+	special: {lexems: [spo, {lexems: [filterexp, path, regexp], usingOr}, spo]},
+	step: {lexems: [escapedchar, special, achar], usingOr},
 	lexems: [{type: step, repeat}],
 }), {n: 3})
 

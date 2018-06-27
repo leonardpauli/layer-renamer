@@ -21,7 +21,7 @@ export const evaluate = (ctx, t, args)=> t.evalValue =
 
 // helpers
 
-export const evaluateStr = (ctx, str)=> {
+export const evaluateStr = (ctx, str, {stopAfterAstify = false} = {})=> {
 	let tokenizeOk = true
 	try {
 		tokenizeNextCore(ctx, str)
@@ -34,7 +34,7 @@ export const evaluateStr = (ctx, str)=> {
 		try {
 			astify(ctx, ctx.lexem)
 		} catch (err) { astifyOk = false; ctx.errors.push({message: 'during astify', err}) }
-		if (astifyOk) try {
+		if (astifyOk && !stopAfterAstify) try {
 			ctx.value = evaluate(ctx, ctx.lexem)
 		} catch (err) { evaluatOk = false; ctx.errors.push({message: 'during evaluatOk', err}) }
 	}

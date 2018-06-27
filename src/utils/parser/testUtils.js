@@ -35,20 +35,33 @@ const logAstValuePlain = custom({
 })
 export const logAstValue = (...args)=> console.log(logAstValuePlain(...args))
 
+const astValueToPlain = v=>
+		!v ? v
+	: v.type ? [v.type.name, astValueToPlain(v.astValue)]
+	: Array.isArray(v) ? v.map(astValueToPlain)
+	: v
 
-export const testManyGet = evaluateStr=> tests=> Object.keys(tests).forEach(k=> it(k, ()=> {
-	const ctx = evaluateStr(k)
+export const testManyGet = (evaluateStr, {testAst = false} = {})=> tests=> Object.keys(tests).forEach(k=> it(k, ()=> {
+	const ctx = evaluateStr(k, void 0, {stopAfterAstify: testAst})
 	if (!Array.isArray(tests[k])) {
 		const {toerror} = tests[k]
 		expect(ctx.errors).toHaveLength(1)
 		expect(ctx.errors[0].message).toMatch(toerror)
 		return
 	}
+	if (testAst) {
+		// TODO
+		logAstValue(ctx.lexem, 8)
+		log(astValueToPlain(ctx.lexem), 8)
+		// ctx.lexem.m
+		// tests[k]
+		return
+	}
 	const {value, restStr} = ctx
 	const [valuet, restStrt] = tests[k]
 	if (ctx.errors.length) {
 		log(ctx.errors, 5)
-		logAstValue(ctx.lexem)
+		logAstValue(ctx.lexem, 8)
 		expect(ctx.errors.length*1).toBe(0)
 	}
 	try {
