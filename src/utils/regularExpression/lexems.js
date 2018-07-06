@@ -39,7 +39,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 	flags: {regex: /^[gmsiyu]{1,6}/},
 	
 	backslash: {regex: /^\\/},
-	achar: {regex: /^([^\\])/},
+	achar: {regex: /^([^\\)($|/])/}, // TODO: all "close"/next-lexem-chars should be auto-excluded?, eg. regex non-gready match?
 
 	charbycode: {
 		controlchar: { regex: /^(c[A-Z])/ },

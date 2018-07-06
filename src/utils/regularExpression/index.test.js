@@ -36,8 +36,8 @@ describe('tokenize', ()=> {
 		['-', 'regexp.characterset.achar'],
 		[']', 'regexp.characterset.close'],
 	])
-	testTokenizeStrC(root.matchable, '(?:a)', [
-		['(', 'regexp.matchgroup.opennormal'], ['?:', 'regexp.matchgroup.grouptype'], ['a', 'regexp.achar'], [')', 'regexp.matchgroup.close']])
+	testTokenizeStrC(root.matchgroup, '(?:a)', [
+		['(?:', 'regexp.matchgroup.opennoncapture'], ['a', 'regexp.achar'], [')', 'regexp.matchgroup.close']])
 
 	testTokenizeStrC(root.matchstep, 'a*', [['a', 'regexp.achar'], ['*', 'regexp.modifierchar']])
 	testTokenizeStrC(root.step, 'a*', [['a', 'regexp.achar'], ['*', 'regexp.modifierchar']])
@@ -60,7 +60,7 @@ describe('tokenize', ()=> {
 		['/', 'regexp.close']])
 })
 
-describe.skip('astify', ()=> {
+describe('astify', ()=> {
 	const testMany = testManyGet((s, _, opt)=> {
 		const ctx = exprCtxDefaultGet()
 		// ctx.vars.name = 'Leo'
@@ -70,7 +70,7 @@ describe.skip('astify', ()=> {
 
 	// TODO
 	describe('simple', ()=> testMany({
-		'1': void 0,
+		'1': [void 0],
 		'/1/': ['regexp', [
 			['achar', '1'],
 		]],
