@@ -62,3 +62,34 @@ astValue:
 		at.start is Token
 		at.end is Token
 		usingOr is many Token
+
+
+test:
+	flags:
+		ignoreCase: true
+		multiline: true
+	step:
+		capture: false
+		at:
+			start: true
+			end: false
+		usingOr: false
+		matches:
+			- type: echar, astValue: Int
+			- type: matchstep, astValue:
+					match: type: echar, astValue: Int
+					modifier:
+						min: 1
+						max: Inf
+						greedy: false
+						lookahead:
+							enabled: false
+							negated: false
+							step:
+								capture: ...
+								...
+			- type: characterset, astValue:
+					negated: false
+					ranges is many {start: Int, end: Int}
+					chars is many Int
+			- type: backref, astValue: Int

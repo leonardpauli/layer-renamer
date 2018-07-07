@@ -41,22 +41,41 @@ const astValueToPlain = v=>
 	: Array.isArray(v) ? v.map(astValueToPlain)
 	: v
 
+// eg. obj = {a: 2, b: 3, c: {some: 'more', even: 'more'}, g: {bla: 5}}
+// 	structure = {a:1, c: {some:8}, g: '..', y: 9}
+// (obj, structure) -> {a: 2, c: {some: 'more'}, g: {bla: 5}, y: undefined}
+// TODO: rename to subset..? + fix array to be subset based; not key/index-based
+export const objectFilterRecursiveToMatchStructure = (obj, structure)=>
+	typeof obj !== 'object' || typeof structure !== 'object' || obj===null || structure===null
+		? obj
+		: Object.keys(structure).reduce((o, k)=> (o[k] =
+			objectFilterRecursiveToMatchStructure(obj[k], structure[k]), o), {})
+
+export const expectDeepSubsetMatch = (source, target)=>
+	expect(objectFilterRecursiveToMatchStructure(source, target)).toEqual(target)
+
+
 export const testManyGet = (evaluateStr, {testAst = false} = {})=> tests=> Object.keys(tests).forEach(k=> it(k, ()=> {
 	const ctx = evaluateStr(k, void 0, {stopAfterAstify: testAst})
-	if (!Array.isArray(tests[k])) {
+	
+	if (tests[k] && tests[k].toerror) {
 		const {toerror} = tests[k]
 		expect(ctx.errors).toHaveLength(1)
 		expect(ctx.errors[0].message).toMatch(toerror)
 		return
 	}
+
 	if (testAst) {
+		expectDeepSubsetMatch(ctx.lexem, tests[k])
 		// TODO
-		logAstValue(ctx.lexem, 8)
-		log(astValueToPlain(ctx.lexem), 8)
+		// logAstValue(ctx.lexem, 8)
+		// log(astValueToPlain(ctx.lexem), 8)
 		// ctx.lexem.m
 		// tests[k]
 		return
 	}
+
+	if (!Array.isArray(tests[k])) throw new Error(`Expected tests[k] to be array, got ${tests[k]}`)
 	const {value, restStr} = ctx
 	const [valuet, restStrt] = tests[k]
 	if (ctx.errors.length) {

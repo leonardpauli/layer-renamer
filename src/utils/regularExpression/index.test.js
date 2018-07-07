@@ -18,6 +18,7 @@ const testTokenizeStrC = (l, ...args)=> {
 }
 
 
+
 describe('tokenize', ()=> {
 	testTokenizeStrC(root.orchar, '|', [['|', 'regexp.orchar']])
 	testTokenizeStrC(root.matchable, 'a', [['a', 'regexp.achar']])
@@ -60,6 +61,8 @@ describe('tokenize', ()=> {
 		['/', 'regexp.close']])
 })
 
+
+
 describe('astify', ()=> {
 	const testMany = testManyGet((s, _, opt)=> {
 		const ctx = exprCtxDefaultGet()
@@ -68,12 +71,175 @@ describe('astify', ()=> {
 		return evaluateStr(s, ctx, opt)
 	}, {testAst: true})
 
-	// TODO
+	const {echar, step, matchstep, characterset, backref} = root
+
+
+
 	describe('simple', ()=> testMany({
-		'1': [void 0],
-		'/1/': ['regexp', [
-			['achar', '1'],
-		]],
-		'/^1+|2|3/': [],
+		
+		'1': void 0,
+		
+		'/1/': {
+			type: root,
+			astValue: {
+				step: { astValue: {
+					matches: [
+						{ type: echar, astValue: '1'.charCodeAt(0) },
+					],
+				}},
+			},
+		},
+
 	}))
+
+	describe('flags', ()=> testMany({
+
+		'/1/': {
+			astValue: {
+				flags: {
+					ignoreCase: false,
+					multiline: false,
+				},
+			},
+		},
+
+		'/1/i': {
+			astValue: {
+				flags: {
+					ignoreCase: true,
+					multiline: false,
+				},
+			},
+		},
+
+		'/1/im': {
+			astValue: {
+				flags: {
+					ignoreCase: true,
+					multiline: true,
+				},
+			},
+		},
+
+	}))
+
+	const stepAstValueW = o=> ({astValue: {step: { astValue: o }}})
+	describe('usingOr', ()=> testMany({
+		
+		'/ab/': stepAstValueW({
+			usingOr: false,
+			matches: [
+				{ type: echar, astValue: 'a'.charCodeAt(0) },
+				{ type: echar, astValue: 'b'.charCodeAt(0) },
+			],
+		}),
+		
+		'/a|b/': stepAstValueW({
+			usingOr: true,
+			matches: [
+				{ type: echar, astValue: 'a'.charCodeAt(0) },
+				{ type: echar, astValue: 'b'.charCodeAt(0) },
+			],
+		}),
+
+	}))
+
+	describe('at', ()=> testMany({
+
+		'/a/': stepAstValueW({
+			at: { start: false, end: false },
+		}),
+
+		'/^a/': stepAstValueW({
+			at: { start: true, end: false },
+		}),
+
+		'/^a$/': stepAstValueW({
+			at: { start: true, end: true },
+		}),
+
+		'/^ac|b$/': stepAstValueW({
+			at: { start: false, end: false },
+			usingOr: true,
+			matches: [
+				{ type: step, astValue: {
+					at: { start: true, end: false },
+					usingOr: false,
+					matches: [
+						{ type: echar, astValue: 'a'.charCodeAt(0) },
+						{ type: echar, astValue: 'c'.charCodeAt(0) },
+					],
+				}},
+				{ type: step, astValue: {
+					at: { start: false, end: true },
+					matches: [
+						{ type: echar, astValue: 'b'.charCodeAt(0) },
+					],
+				}},
+			],
+		}),
+
+	}))
+
+	/*
+
+	describe('escapedchar', ()=> testMany({
+	}))
+
+	describe('backref', ()=> testMany({
+	}))
+
+	describe('characterset', ()=> testMany({
+	}))
+
+	describe('capture groups', ()=> testMany({
+	}))
+
+	describe('matchstep modifier', ()=> testMany({
+	}))
+
+
+	describe('full on', ()=> testMany({
+		// '/^1+|2|3/': [],
+		'/1/': {
+			type: root,
+			astValue: {
+				flags: {
+					ignoreCase: true,
+					multiline: true,
+				},
+				step: { astValue: {
+					capture: false,
+					at: { start: true, end: false },
+					usingOr: false,
+					matches: [
+						{ type: echar, astValue: 5 },
+						{ type: matchstep, astValue: {
+							match: { type: echar, astValue: 5 },
+							modifier: {
+								min: 1,
+								max: 3,
+								greedy: false,
+								lookahead: {
+									enabled: false,
+									negated: false,
+									// step:,
+									// 	capture: ...,
+									// 	...,
+								},
+							},
+						}},
+						{ type: characterset, astValue: {
+							negated: false,
+							ranges: [{start: 5, end: 8}],
+							chars: [4],
+						}},
+						{ type: backref, astValue: 5 },
+					],
+				}},
+			},
+		},
+	}))
+	*/
+
 })
