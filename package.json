@@ -49,6 +49,6 @@
   ],
   "dependencies": {
     "@leonardpauli/sketch-module-web-view": "^1.1.7-lp.2",
-    "string-from-object": "^1.1.1"
+    "string-from-object": "^1.1.2"
   }
 }
