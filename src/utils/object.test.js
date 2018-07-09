@@ -5,7 +5,11 @@
 // copyright © Leonard Pauli 2018
 
 import {log} from 'string-from-object'
-import {stupidIterativeObjectDependencyResolve, deepAssign, P} from './object'
+import {
+	stupidIterativeObjectDependencyResolve, deepAssign, P,
+	objectMap, objectMapRecursive,
+} from './object'
+import {expectDeepSubsetMatch} from './testUtils'
 
 
 describe('P.unwrap', ()=> {
@@ -117,5 +121,43 @@ describe('stupidIterativeObjectDependencyResolve', ()=> {
 		// log(r)
 		expect(r.a.b).toBe(1)
 		expect(r.a.c).toBe(r.a)
+	})
+})
+
+
+describe('objectMap', ()=> {
+	it('objectMap', ()=> {
+		expect(objectMap((v, k)=> `${k}: ${typeof v}`)({a: 5, b: {c: 3}})).toEqual({
+			a: 'a: number',
+			b: 'b: object',
+		})
+	})
+	it('objectMapRecursive', ()=> {
+		// TODO: test nested arrays
+		expect(objectMapRecursive({a: 5, b: {c: 3}}, (v, k)=> `${k}: ${typeof v}`)).toEqual({
+			a: 'a: number',
+			b: 'b: object',
+		})
+		expect(objectMapRecursive({a: 5, b: {c: 3}},
+			(v, k, {recurse})=> recurse? recurse(): `${k}: ${typeof v}`
+		)).toEqual({
+			a: 'a: number',
+			b: {
+				c: 'c: number',
+			},
+		})
+	})
+})
+
+describe('expectDeepSubsetMatch', ()=> {
+	it('does', ()=> {
+		expectDeepSubsetMatch({}, {})
+		expectDeepSubsetMatch({a: 3}, {})
+		expect(()=> expectDeepSubsetMatch({}, {a: 3})).toThrow('Expected')
+	})
+	it('recursive', ()=> {
+		const a = {z: 5, id: 'a'}; a.r = a
+		const b = {z: 5}; b.r = b
+		expectDeepSubsetMatch({a}, {a: b})
 	})
 })

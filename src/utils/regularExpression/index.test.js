@@ -8,8 +8,7 @@ import sfo, {log} from 'string-from-object'
 
 import {
 	testTokenizeStr, logAstValue, testManyGet,
-	objectMap, objectMapRecursive, lexemSimplifyForView,
-	expectDeepSubsetMatch,
+	lexemSimplifyForView,
 } from '../parser/testUtils'
 import {expand} from '../parser/lexemUtils'
 
@@ -66,32 +65,8 @@ describe('tokenize', ()=> {
 })
 
 
-describe('object utils', ()=> {
-	it('objectMap', ()=> {
-		expect(objectMap((v, k)=> `${k}: ${typeof v}`)({a: 5, b: {c: 3}})).toEqual({
-			a: 'a: number',
-			b: 'b: object',
-		})
-	})
-	it('objectMapRecursive', ()=> {
-		// TODO: test nested arrays
-		expect(objectMapRecursive({a: 5, b: {c: 3}}, (v, k)=> `${k}: ${typeof v}`)).toEqual({
-			a: 'a: number',
-			b: 'b: object',
-		})
-		expect(objectMapRecursive({a: 5, b: {c: 3}},
-			(v, k, {recurse})=> recurse? recurse(): `${k}: ${typeof v}`
-		)).toEqual({
-			a: 'a: number',
-			b: {
-				c: 'c: number',
-			},
-		})
-	})
-})
-
-describe('expectDeepSubsetMatch', ()=> {
-	it('lexemSimplifyForView', ()=> {
+describe('lexemSimplifyForView', ()=> {
+	it('simple', ()=> {
 		const a = {z: 5, id: 'a'}; a.r = a
 		const b = {z: 5}; b.r = b
 		expect(lexemSimplifyForView(a)).toEqual(a)
@@ -99,18 +74,7 @@ describe('expectDeepSubsetMatch', ()=> {
 	})
 
 	it('lexemSimplifyForView type', ()=> {
-		expect(lexemSimplifyForView(root).matchable).toBe('type.name: regexp.matchable')
-	})
-
-	it('does', ()=> {
-		expectDeepSubsetMatch({}, {})
-		expectDeepSubsetMatch({a: 3}, {})
-		expect(()=> expectDeepSubsetMatch({}, {a: 3})).toThrow('Expected')
-	})
-	it('recursive', ()=> {
-		const a = {z: 5, id: 'a'}; a.r = a
-		const b = {z: 5}; b.r = b
-		expectDeepSubsetMatch({a}, {a: b})
+		expect(lexemSimplifyForView(root).matchable).toBe('regexp.matchable')
 	})
 })
 
