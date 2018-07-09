@@ -11,7 +11,8 @@ import sfo, {log, custom} from 'string-from-object'
 import {objectMapRecursive} from '../object'
 import {expectDeepSubsetMatch} from '../testUtils'
 
-import {tokenizeNext} from '../parser/tokenizer'
+import {lexemSimplifyForView} from './lexemUtils'
+import {tokenizeNext} from './tokenizer'
 
 
 export const testTokenizeStr = (ctx, str, tasexp)=> it(str, ()=> {
@@ -44,13 +45,6 @@ const astValueToPlain = v=>
 	: v.type ? [v.type.name, astValueToPlain(v.astValue)]
 	: Array.isArray(v) ? v.map(astValueToPlain)
 	: v
-
-
-export const lexemSimplifyForView = o=> objectMapRecursive(o, (v, k, {recurse})=>
-		v && v.type && v.type === v? `${v.type.name}`
-	: v && typeof v==='object' && !(v.constructor===Object || Array.isArray(v))? v
-	: recurse? recurse()
-	: v)
 
 
 export const testManyGet = (evaluateStr, {testAst = false} = {})=> tests=> Object.keys(tests).forEach(k=> it(k, ()=> {

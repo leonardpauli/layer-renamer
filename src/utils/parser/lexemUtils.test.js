@@ -6,7 +6,7 @@
 
 import {log} from 'string-from-object'
 import {stupidIterativeObjectDependencyResolve as objr} from '../object'
-import {flags, expand} from './lexemUtils'
+import {flags, expand, lexemSimplifyForView} from './lexemUtils'
 
 const {autoInsertIfNeeded, optional, repeat, usingOr} = flags
 
@@ -54,4 +54,23 @@ describe('lexem expand', ()=> {
 		expect(root.type.lexems[1].type.lexems[0].optional).toBe(true)
 	})
 	// TODO: use sticky match (regex flag y + regex.lastIndex) so "^" isn't needed all the time
+})
+
+
+describe('lexemSimplifyForView', ()=> {
+	const root = {name: 'example', a: {regex: /^a/}}
+	root.lexems = [{type: root.a, optional}, {lexems: [
+		{type: {regex: /^b/, description: 'inner'}, optional}, {regex: /^c/}]}]
+	expand(root)
+
+	it('simple', ()=> {
+		const a = {z: 5, id: 'a'}; a.r = a
+		const b = {z: 5}; b.r = b
+		expect(lexemSimplifyForView(a)).toEqual(a)
+		expect(lexemSimplifyForView(a)).not.toBe(a)
+	})
+
+	it('lexemSimplifyForView type', ()=> {
+		expect(lexemSimplifyForView(root).a).toBe('example.a')
+	})
 })

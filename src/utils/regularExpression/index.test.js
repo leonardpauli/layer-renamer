@@ -8,7 +8,6 @@ import sfo, {log} from 'string-from-object'
 
 import {
 	testTokenizeStr, logAstValue, testManyGet,
-	lexemSimplifyForView,
 } from '../parser/testUtils'
 import {expand} from '../parser/lexemUtils'
 
@@ -62,20 +61,6 @@ describe('tokenize', ()=> {
 		['/', 'regexp.open'],
 		['(', 'regexp.matchgroup.opennormal'], ['a', 'regexp.achar'], [')', 'regexp.matchgroup.close'],
 		['/', 'regexp.close']])
-})
-
-
-describe('lexemSimplifyForView', ()=> {
-	it('simple', ()=> {
-		const a = {z: 5, id: 'a'}; a.r = a
-		const b = {z: 5}; b.r = b
-		expect(lexemSimplifyForView(a)).toEqual(a)
-		expect(lexemSimplifyForView(a)).not.toBe(a)
-	})
-
-	it('lexemSimplifyForView type', ()=> {
-		expect(lexemSimplifyForView(root).matchable).toBe('regexp.matchable')
-	})
 })
 
 

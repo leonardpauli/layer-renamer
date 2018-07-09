@@ -7,6 +7,7 @@
 // based on rim / towards rim
 
 import sfo, {log} from 'string-from-object'
+import {objectMapRecursive} from '../object'
 const concat = xxs=> xxs.reduce((a, xs)=> (a.push(...xs), a), [])
 
 
@@ -135,3 +136,10 @@ export const expand = root=> {
 export const astidsExpand = astids=>
 	Object.keys(astids).map(k=> astids[k].name = astids[k].name || k)
 export const lexemsAstTypesExpand = types=> types.forEach((p, i)=> p.prio = i)
+
+
+export const lexemSimplifyForView = o=> objectMapRecursive(o, (v, k, {recurse})=>
+		v && v.type && v.type === v? `${v.type.name}`
+	: v && typeof v==='object' && !(v.constructor===Object || Array.isArray(v))? v
+	: recurse? recurse()
+	: v)
