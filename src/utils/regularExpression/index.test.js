@@ -6,7 +6,11 @@
 
 import sfo, {log} from 'string-from-object'
 
-import {testTokenizeStr, logAstValue, testManyGet} from '../parser/testUtils'
+import {
+	testTokenizeStr, logAstValue, testManyGet,
+	objectMap, objectMapRecursive, lexemSimplifyForView,
+	expectDeepSubsetMatch,
+} from '../parser/testUtils'
 import {expand} from '../parser/lexemUtils'
 
 import {evaluateStr, exprCtxDefaultGet} from '.'
@@ -62,6 +66,54 @@ describe('tokenize', ()=> {
 })
 
 
+describe('object utils', ()=> {
+	it('objectMap', ()=> {
+		expect(objectMap((v, k)=> `${k}: ${typeof v}`)({a: 5, b: {c: 3}})).toEqual({
+			a: 'a: number',
+			b: 'b: object',
+		})
+	})
+	it('objectMapRecursive', ()=> {
+		// TODO: test nested arrays
+		expect(objectMapRecursive({a: 5, b: {c: 3}}, (v, k)=> `${k}: ${typeof v}`)).toEqual({
+			a: 'a: number',
+			b: 'b: object',
+		})
+		expect(objectMapRecursive({a: 5, b: {c: 3}},
+			(v, k, {recurse})=> recurse? recurse(): `${k}: ${typeof v}`
+		)).toEqual({
+			a: 'a: number',
+			b: {
+				c: 'c: number',
+			},
+		})
+	})
+})
+
+describe('expectDeepSubsetMatch', ()=> {
+	it('lexemSimplifyForView', ()=> {
+		const a = {z: 5, id: 'a'}; a.r = a
+		const b = {z: 5}; b.r = b
+		expect(lexemSimplifyForView(a)).toEqual(a)
+		expect(lexemSimplifyForView(a)).not.toBe(a)
+	})
+
+	it('lexemSimplifyForView type', ()=> {
+		expect(lexemSimplifyForView(root).matchable).toBe('type.name: regexp.matchable')
+	})
+
+	it('does', ()=> {
+		expectDeepSubsetMatch({}, {})
+		expectDeepSubsetMatch({a: 3}, {})
+		expect(()=> expectDeepSubsetMatch({}, {a: 3})).toThrow('Expected')
+	})
+	it('recursive', ()=> {
+		const a = {z: 5, id: 'a'}; a.r = a
+		const b = {z: 5}; b.r = b
+		expectDeepSubsetMatch({a}, {a: b})
+	})
+})
+
 
 describe('astify', ()=> {
 	const testMany = testManyGet((s, _, opt)=> {
@@ -73,11 +125,12 @@ describe('astify', ()=> {
 
 	const {echar, step, matchstep, characterset, backref} = root
 
-
-
-	describe('simple', ()=> testMany({
+	describe.only('simple', ()=> testMany({
 		
-		'1': void 0,
+		'1': {
+			type: root,
+			astValue: void 0,
+		},
 		
 		'/1/': {
 			type: root,

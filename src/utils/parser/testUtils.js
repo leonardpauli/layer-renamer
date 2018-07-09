@@ -45,14 +45,60 @@ const astValueToPlain = v=>
 // 	structure = {a:1, c: {some:8}, g: '..', y: 9}
 // (obj, structure) -> {a: 2, c: {some: 'more'}, g: {bla: 5}, y: undefined}
 // TODO: rename to subset..? + fix array to be subset based; not key/index-based
-export const objectFilterRecursiveToMatchStructure = (obj, structure)=>
-	typeof obj !== 'object' || typeof structure !== 'object' || obj===null || structure===null
-		? obj
-		: Object.keys(structure).reduce((o, k)=> (o[k] =
-			objectFilterRecursiveToMatchStructure(obj[k], structure[k]), o), {})
+export const objectFilterRecursiveToMatchStructure = (obj, structure, {
+	taken = new Set(),
+	takenSkip = false, takenReturnStructure = false,
+} = {})=>
+		typeof obj !== 'object' || typeof structure !== 'object'
+		|| obj===null || structure===null
+		|| obj===structure ? obj
+	: taken.has(structure)? takenSkip
+		? void 0
+		: takenReturnStructure? structure: obj
+	: (taken.add(structure), Object.keys(structure).reduce((o, k)=> (o[k] =
+		objectFilterRecursiveToMatchStructure(obj[k], structure[k], {
+			taken, takenSkip, takenReturnStructure}), o), {}))
+
+const arrayAppend = (target, ...xss)=> (xss.forEach(xs=> target.push(...xs)), target)
+
+export const objectMap = fn=> obj=> Object.keys(obj)
+	.reduce((o, k)=> (o[k] = fn(obj[k], k), o), {})
+
+export const objectMapRecursive = (obj, fn, {
+	// filter = ({})
+	taken = [], takenMapCache = [],
+	key = null,
+} = {})=> typeof obj !== 'object' || obj===null
+	? fn(obj, key, {recurse: null})
+	: taken.indexOf(obj)>=0
+		? takenMapCache[taken.indexOf(obj)]
+		: (taken.push(obj), Array.isArray(obj)
+			// TODO: also do object properties on arrays (non integer keys)
+			? arrayAppend(takenMapCache[takenMapCache.length] = [],
+				obj.map((v, k)=> fn(v, k, {
+					recurse: ()=> objectMapRecursive(v, fn, {
+						taken, takenMapCache, key: k,
+					}),
+				})))
+			: Object.assign(takenMapCache[takenMapCache.length] = {},
+				objectMap((v, k)=> fn(v, k, {
+					recurse: ()=> objectMapRecursive(v, fn, {
+						taken, takenMapCache, key: k,
+					}),
+				}))(obj))
+		)
+
+
+export const lexemSimplifyForView = o=> objectMapRecursive(o, (v, k, {recurse})=>
+		v && v.type && v.type === v? `${v.type.name}`
+	: v && typeof v==='object' && !(v.constructor===Object || Array.isArray(v))? v
+	: recurse? recurse()
+	: v)
 
 export const expectDeepSubsetMatch = (source, target)=>
-	expect(objectFilterRecursiveToMatchStructure(source, target)).toEqual(target)
+	expect(objectFilterRecursiveToMatchStructure(
+		source, target, { takenReturnStructure: true },
+	)).toEqual(target)
 
 
 export const testManyGet = (evaluateStr, {testAst = false} = {})=> tests=> Object.keys(tests).forEach(k=> it(k, ()=> {
@@ -66,7 +112,12 @@ export const testManyGet = (evaluateStr, {testAst = false} = {})=> tests=> Objec
 	}
 
 	if (testAst) {
-		expectDeepSubsetMatch(ctx.lexem, tests[k])
+		// log(lexemSimplifyForView(ctx.lexem), 2)
+		// log(lexemSimplifyForView(tests[k]), 2)
+		// throw new Error('alalla')
+		expectDeepSubsetMatch(
+			lexemSimplifyForView(ctx.lexem),
+			lexemSimplifyForView(tests[k]))
 		// TODO
 		// logAstValue(ctx.lexem, 8)
 		// log(astValueToPlain(ctx.lexem), 8)
