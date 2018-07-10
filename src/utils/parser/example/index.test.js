@@ -5,7 +5,7 @@
 // copyright © Leonard Pauli 2018
 
 import sfo, {log} from 'string-from-object'
-import {testTokenizeStr, logAstValue, testManyGet} from '../testUtils'
+import {testTokenizeStr, testManyGet} from '../testUtils'
 
 import {evaluateStr, exprCtxDefaultGet} from '.'
 

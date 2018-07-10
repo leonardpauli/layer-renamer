@@ -85,7 +85,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 		lexems: [matchgroup.open, {type: orlist, optional}, matchgroup.close],
 	},
 	matchmodifiergroup: {
-		opennormal: { regex: /^\((?!\?)/ },
+		opennormal: { regex: /^\(/ },
 		grouptype: { regex: /^(\?=|\?!)/ },
 		open: {lexems: [matchmodifiergroup.opennormal, matchmodifiergroup.grouptype]},
 		close: { regex: /^\)/ },
@@ -101,7 +101,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 	matchable: {lexems: [characterset, matchgroup, echar, backref], usingOr},
 	matchstep: {lexems: [matchable, {type: matchmodifier, optional, repeat}]},
 
-	// positionchar?, matchstep?, positionchar?
+	// positionchar?, matchstep*, positionchar?
 	matchstart: {regex: /^\^/},
 	matchend: {regex: /^\$/},
 	step: {lexems: [{type: matchstart, optional}, {type: matchstep, optional, repeat}, {type: matchend, optional}]},

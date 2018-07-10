@@ -85,18 +85,24 @@ export const stupidIterativeObjectDependencyResolve = objr
 // (obj, structure) -> {a: 2, c: {some: 'more'}, g: {bla: 5}, y: undefined}
 // TODO: rename to subset..? + fix array to be subset based; not key/index-based
 export const objectFilterRecursiveToMatchStructure = (obj, structure, {
-	taken = new Set(),
+	taken = new Set(), // TODO: is circular an issue? (see objectMapRecursive)
 	takenSkip = false, takenReturnStructure = false,
 } = {})=>
 		typeof obj !== 'object' || typeof structure !== 'object'
 		|| obj===null || structure===null
-		|| obj===structure ? obj
+		|| obj===structure
+	? obj
 	: taken.has(structure)? takenSkip
 		? void 0
 		: takenReturnStructure? structure: obj
-	: (taken.add(structure), Object.keys(structure).reduce((o, k)=> (o[k] =
-		objectFilterRecursiveToMatchStructure(obj[k], structure[k], {
-			taken, takenSkip, takenReturnStructure}), o), {}))
+	: (taken.add(structure), Array.isArray(obj)
+			// TODO: also do object properties on arrays (non integer keys)
+		? structure.map((v, k)=>
+			objectFilterRecursiveToMatchStructure(obj[k], structure[k], {
+				taken, takenSkip, takenReturnStructure}))
+		: Object.keys(structure).reduce((o, k)=> (o[k] =
+			objectFilterRecursiveToMatchStructure(obj[k], structure[k], {
+				taken, takenSkip, takenReturnStructure}), o), {}))
 
 export const arrayAppend = (target, ...xss)=> (xss.forEach(xs=> target.push(...xs)), target)
 
@@ -104,7 +110,7 @@ export const objectMap = fn=> obj=> Object.keys(obj)
 	.reduce((o, k)=> (o[k] = fn(obj[k], k), o), {})
 
 export const objectMapRecursive = (obj, fn, {
-	// filter = ({})
+	beforeMap = null, // obj=> obj,
 	taken = [], takenMapCache = [],
 	key = null,
 } = {})=> typeof obj !== 'object' || obj===null
@@ -116,13 +122,13 @@ export const objectMapRecursive = (obj, fn, {
 			? arrayAppend(takenMapCache[takenMapCache.length] = [],
 				obj.map((v, k)=> fn(v, k, {
 					recurse: ()=> objectMapRecursive(v, fn, {
-						taken, takenMapCache, key: k,
+						beforeMap, taken, takenMapCache, key: k,
 					}),
 				})))
 			: Object.assign(takenMapCache[takenMapCache.length] = {},
 				objectMap((v, k)=> fn(v, k, {
 					recurse: ()=> objectMapRecursive(v, fn, {
-						taken, takenMapCache, key: k,
+						beforeMap, taken, takenMapCache, key: k,
 					}),
-				}))(obj))
+				}))(beforeMap? beforeMap(obj): obj))
 		)

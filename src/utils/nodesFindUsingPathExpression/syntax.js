@@ -26,7 +26,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 	colon, achar, backslash, escapedchar,
 	path,
 	filterexp,
-	special, step, inside,
+	special, step,
 })=> ({
 	sp: {regex: /^[\t ]+/, description: 'space-horizontal'},
 	spo: {type: sp, optional},

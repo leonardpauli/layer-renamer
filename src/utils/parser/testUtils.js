@@ -11,7 +11,7 @@ import sfo, {log, custom} from 'string-from-object'
 import {objectMapRecursive} from '../object'
 import {expectDeepSubsetMatch} from '../testUtils'
 
-import {lexemSimplifyForView} from './lexemUtils'
+import {lexemSimplifyForView, lexemAstValueToPlain} from './lexemUtils'
 import {tokenizeNext} from './tokenizer'
 
 
@@ -30,23 +30,6 @@ export const testTokenizeStr = (ctx, str, tasexp)=> it(str, ()=> {
 })
 
 
-const logAstValuePlain = custom({
- 	indentation: '  ', colors: true,
-	depth: 10,
-	filter: ({key, value, parent})=> value !== void 0
-		&& !(parent.key === 'type')
-		&& !(parent.key === 'astId')
-		&& !'optional,repeat,tokens,lexems,location,match,matched,astTokens'.split(',').includes(key),
-})
-export const logAstValue = (...args)=> console.log(logAstValuePlain(...args))
-
-const astValueToPlain = v=>
-		!v ? v
-	: v.type ? [v.type.name, astValueToPlain(v.astValue)]
-	: Array.isArray(v) ? v.map(astValueToPlain)
-	: v
-
-
 export const testManyGet = (evaluateStr, {testAst = false} = {})=> tests=> Object.keys(tests).forEach(k=> it(k, ()=> {
 	const ctx = evaluateStr(k, void 0, {stopAfterAstify: testAst})
 	
@@ -58,17 +41,17 @@ export const testManyGet = (evaluateStr, {testAst = false} = {})=> tests=> Objec
 	}
 
 	if (testAst) {
-		// log(lexemSimplifyForView(ctx.lexem), 2)
-		// log(lexemSimplifyForView(tests[k]), 2)
-		// throw new Error('alalla')
-		expectDeepSubsetMatch(
-			lexemSimplifyForView(ctx.lexem),
-			lexemSimplifyForView(tests[k]))
-		// TODO
-		// logAstValue(ctx.lexem, 8)
-		// log(astValueToPlain(ctx.lexem), 8)
-		// ctx.lexem.m
-		// tests[k]
+		try {
+			expectDeepSubsetMatch(
+				lexemSimplifyForView(ctx.lexem),
+				lexemSimplifyForView(tests[k]))
+		} catch (err) {
+			if (tests[k].astValue) {
+				log(lexemAstValueToPlain(tests[k]), 10)
+				log(lexemAstValueToPlain(ctx.lexem), 10)
+			}
+			throw err
+		}
 		return
 	}
 
@@ -77,7 +60,7 @@ export const testManyGet = (evaluateStr, {testAst = false} = {})=> tests=> Objec
 	const [valuet, restStrt] = tests[k]
 	if (ctx.errors.length) {
 		log(ctx.errors, 5)
-		logAstValue(ctx.lexem, 8)
+		log(lexemAstValueToPlain(ctx.lexem), 8)
 		expect(ctx.errors.length*1).toBe(0)
 	}
 	try {

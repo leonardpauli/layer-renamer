@@ -6,9 +6,7 @@
 
 import sfo, {log} from 'string-from-object'
 
-import {
-	testTokenizeStr, logAstValue, testManyGet,
-} from '../parser/testUtils'
+import {testTokenizeStr, testManyGet} from '../parser/testUtils'
 import {expand} from '../parser/lexemUtils'
 
 import {evaluateStr, exprCtxDefaultGet} from '.'
@@ -74,7 +72,7 @@ describe('astify', ()=> {
 
 	const {echar, step, matchstep, characterset, backref} = root
 
-	describe.only('simple', ()=> testMany({
+	describe('simple', ()=> testMany({
 		
 		'1': {
 			type: root,
@@ -84,11 +82,7 @@ describe('astify', ()=> {
 		'/1/': {
 			type: root,
 			astValue: {
-				step: { astValue: {
-					matches: [
-						{ type: echar, astValue: '1'.charCodeAt(0) },
-					],
-				}},
+				step: { type: echar, astValue: '1'.charCodeAt(0) },
 			},
 		},
 
@@ -126,29 +120,39 @@ describe('astify', ()=> {
 	}))
 
 	const stepAstValueW = o=> ({astValue: {step: { astValue: o }}})
+	const stepAstValueWOr = o=> ({astValue: {step: { type: root.orlist, astValue: o }}})
 	describe('usingOr', ()=> testMany({
 		
 		'/ab/': stepAstValueW({
-			usingOr: false,
 			matches: [
 				{ type: echar, astValue: 'a'.charCodeAt(0) },
 				{ type: echar, astValue: 'b'.charCodeAt(0) },
 			],
 		}),
 		
-		'/a|b/': stepAstValueW({
-			usingOr: true,
-			matches: [
-				{ type: echar, astValue: 'a'.charCodeAt(0) },
-				{ type: echar, astValue: 'b'.charCodeAt(0) },
-			],
-		}),
+		'/a|b/': stepAstValueWOr([
+			{ type: echar, astValue: 'a'.charCodeAt(0) },
+			{ type: echar, astValue: 'b'.charCodeAt(0) },
+		]),
+		
+		'/a|||b|c||/': stepAstValueWOr([
+			{ type: echar, astValue: 'a'.charCodeAt(0) },
+			{ type: echar, astValue: 'b'.charCodeAt(0) },
+		]),
+		
+		'/|b/': {astValue: void 0},
+		// stepAstValueW({ // TODO: errors?
+		// 	usingOr: false,
+		// 	matches: [
+		// 		{ type: echar, astValue: 'b'.charCodeAt(0) },
+		// 	],
+		// }),
 
 	}))
 
 	describe('at', ()=> testMany({
 
-		'/a/': stepAstValueW({
+		'/ab/': stepAstValueW({
 			at: { start: false, end: false },
 		}),
 
@@ -160,88 +164,109 @@ describe('astify', ()=> {
 			at: { start: true, end: true },
 		}),
 
-		'/^ac|b$/': stepAstValueW({
-			at: { start: false, end: false },
-			usingOr: true,
-			matches: [
-				{ type: step, astValue: {
-					at: { start: true, end: false },
-					usingOr: false,
-					matches: [
-						{ type: echar, astValue: 'a'.charCodeAt(0) },
-						{ type: echar, astValue: 'c'.charCodeAt(0) },
-					],
-				}},
-				{ type: step, astValue: {
-					at: { start: false, end: true },
-					matches: [
-						{ type: echar, astValue: 'b'.charCodeAt(0) },
-					],
-				}},
-			],
-		}),
-
+		'/^ac|b$/': stepAstValueWOr([
+			{ type: step, astValue: {
+				at: { start: true, end: false },
+				usingOr: false,
+				matches: [
+					{ type: echar, astValue: 'a'.charCodeAt(0) },
+					{ type: echar, astValue: 'c'.charCodeAt(0) },
+				],
+			}},
+			{ type: step, astValue: {
+				at: { start: false, end: true },
+				matches: [
+					{ type: echar, astValue: 'b'.charCodeAt(0) },
+				],
+			}},
+		]),
 	}))
 
-	/*
-
-	describe('escapedchar', ()=> testMany({
+	describe.skip('escapedchar', ()=> testMany({
+		'/\\0/': 'TODO',
+		'/\\u45/': 'TODO',
+		'/\\b/': 'TODO',
+		'/\\./': 'TODO',
+		'/\\\\/': 'TODO',
+		'/\\[/': 'TODO',
+		'/\\(/': 'TODO',
+		'/\\//': 'TODO',
 	}))
 
-	describe('backref', ()=> testMany({
+	describe.skip('backref', ()=> testMany({
+		// { type: backref, astValue: 5 },
+		'/(a)\\1/': 'TODO',
+		'/\\5/': 'TODO', // unavailable backref -> error?
 	}))
 
-	describe('characterset', ()=> testMany({
+	describe.skip('characterset', ()=> testMany({
+		'/[a]/': 'TODO',
+		'/[^a]/': 'TODO',
+		'/[^]/': 'TODO',
+		'/[A-z0-9]/': 'TODO',
+		'/[a-]/': 'TODO',
+		'/[\\b\\[c\\]\\u45]/': 'TODO', // backref in charset -> error?
+
+		// { type: characterset, astValue: {
+		// 	negated: false,
+		// 	ranges: [{start: 5, end: 8}],
+		// 	chars: [4],
+		// }},
 	}))
 
-	describe('capture groups', ()=> testMany({
+	describe.skip('capture groups', ()=> testMany({
+		'/(a)/': 'TODO',
+		'/(a|b)/': 'TODO',
+		'/(?:a)/': 'TODO',
+		'/(a(b(c)d))/': 'TODO',
 	}))
 
-	describe('matchstep modifier', ()=> testMany({
-	}))
+	const stepAstValueWMatchStep = modifier=> ({ astValue: { step: { type: root.matchstep, astValue: {
+		match: { type: echar, astValue: 'a'.charCodeAt(0) },
+		modifier,
+	}}}})
+	describe('matchstep modifier simple', ()=> testMany({
+		'/a?/': stepAstValueWMatchStep({ min: 0, max: 1 }),
+		'/a+/': stepAstValueWMatchStep({ min: 1, max: Infinity, greedy: true }),
+		'/a*/': stepAstValueWMatchStep({ min: 0, max: Infinity, greedy: true }),
 
+		// '/a??/': 'TODO', // invalid? -> error
+		'/a+?/': stepAstValueWMatchStep({ min: 1, max: Infinity, greedy: false }),
+		'/a*?/': stepAstValueWMatchStep({ min: 0, max: Infinity, greedy: false }),
+
+		'/a{2,4}/': stepAstValueWMatchStep({ min: 2, max: 4, greedy: true }),
+		'/a{2,}/': stepAstValueWMatchStep({ min: 2, max: Infinity, greedy: true }),
+		'/a{,4}/': stepAstValueWMatchStep({ min: 0, max: 4, greedy: true }),
+	}))
+	describe.skip('matchstep modifier lookahead', ()=> testMany({
+		'/a(?!b)/': 'TODO',
+		'/a(?=b)/': 'TODO',
+
+		// '/a(?!b)(?!c)/': 'TODO multiple?', // -> /a(?!b|c)/
+		// '/a{2,3}?+(?=b)/': 'TODO multiple?',
+	}))
 
 	describe('full on', ()=> testMany({
-		// '/^1+|2|3/': [],
-		'/1/': {
-			type: root,
-			astValue: {
-				flags: {
-					ignoreCase: true,
-					multiline: true,
-				},
-				step: { astValue: {
-					capture: false,
+
+		'/^1+|2|3/ig': { astValue: {
+			step: { type: root.orlist, astValue: [
+				{ type: root.step, astValue: {
 					at: { start: true, end: false },
-					usingOr: false,
-					matches: [
-						{ type: echar, astValue: 5 },
-						{ type: matchstep, astValue: {
-							match: { type: echar, astValue: 5 },
-							modifier: {
-								min: 1,
-								max: 3,
-								greedy: false,
-								lookahead: {
-									enabled: false,
-									negated: false,
-									// step:,
-									// 	capture: ...,
-									// 	...,
-								},
-							},
-						}},
-						{ type: characterset, astValue: {
-							negated: false,
-							ranges: [{start: 5, end: 8}],
-							chars: [4],
-						}},
-						{ type: backref, astValue: 5 },
-					],
+					matches: [{ type: root.matchstep, astValue: {
+						match: { type: echar, astValue: '1'.charCodeAt(0) },
+						modifier: { min: 1, max: Infinity },
+					}}],
 				}},
+				{ type: echar, astValue: '2'.charCodeAt(0) },
+				{ type: echar, astValue: '3'.charCodeAt(0) },
+			]},
+			flags: {
+				ignoreCase: true,
+				global: true,
+				multiline: false,
 			},
-		},
+		}},
+
 	}))
-	*/
 
 })

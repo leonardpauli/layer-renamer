@@ -6,7 +6,7 @@
 
 import sfo, {log} from 'string-from-object'
 
-import {testTokenizeStr, logAstValue, testManyGet} from '../parser/testUtils'
+import {testTokenizeStr, testManyGet} from '../parser/testUtils'
 import {expand} from '../parser/lexemUtils'
 
 import {evaluateStr, exprCtxDefaultGet} from '.'

@@ -143,3 +143,10 @@ export const lexemSimplifyForView = o=> objectMapRecursive(o, (v, k, {recurse})=
 	: v && typeof v==='object' && !(v.constructor===Object || Array.isArray(v))? v
 	: recurse? recurse()
 	: v)
+
+export const lexemAstValueToPlain = v=> objectMapRecursive(v, (v, k, {recurse})=>
+	recurse? recurse(): v, {
+	beforeMap: obj=> obj.type && obj.type===obj.type.type
+		?	{type: obj.type.name, astValue: obj.astValue}
+		: obj,
+})
