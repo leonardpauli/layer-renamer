@@ -114,7 +114,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 	// \/, step+, \/, flags?
 	lexems: [open, orlist, close, {type: flags, optional}],
 
-	// simple: {regex: /^\/(\\.|[^\\])*\/([a-z]+)?/ },
+	simple: {regex: /^\/(\\.|[^\\])*\/([a-z]+)?/ },
 }), {n: 3})
 
 expand(root)

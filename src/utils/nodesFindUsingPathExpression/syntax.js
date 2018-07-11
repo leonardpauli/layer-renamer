@@ -48,7 +48,7 @@ const root = stupidIterativeObjectDependencyResolve(({
 	},
 
 	// TODO: join nearby achar, possibly use as regex if enabled, or just match as substr
-	special: {lexems: [spo, {lexems: [filterexp, path, regexp], usingOr}, spo]},
+	special: {lexems: [spo, {lexems: [filterexp, path, regexp.simple], usingOr}, spo]},
 	step: {lexems: [escapedchar, special, achar], usingOr},
 	lexems: [{type: step, repeat}],
 }), {n: 3})
