@@ -6,7 +6,7 @@
 
 /* eslint-disable */
 
-import {transformStringCaseUsingFlags} from '../utils/misc'
+import {transformStringCaseUsingFlags} from '@leonardpauli/utils/lib/misc'
 // import {replaceLayerExpressionFlags} from './custom-utils'
 const replaceLayerExpressionFlags = ()=> void 0
 

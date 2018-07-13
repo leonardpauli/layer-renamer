@@ -2,17 +2,5 @@
 	"extends": ["sketch", "@leonardpauli/eslint-config"],
 	"globals": {
 		"coscript": true
-	},
-	"rules": {
-		"indent": [2, "tab", {"ignoredNodes": ["ConditionalExpression"]}],
-		"operator-linebreak": ["warn", "before", {
-			overrides: {
-				"=": "after",
-				// '||': 'before',
-				// '&&': 'before',
-				// ':': 'before',
-				// '?': 'before',
-			},
-		}]
 	}
 }

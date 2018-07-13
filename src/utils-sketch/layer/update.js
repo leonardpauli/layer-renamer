@@ -6,7 +6,7 @@
 
 import {layerKindGet} from './misc'
 import layerQuery from './query'
-import arrayDeltaActions from '../../utils/arrayDeltaActions'
+import arrayDeltaActions from '@leonardpauli/utils/lib/arrayDeltaActions'
 
 const rndstr = ()=> Math.random().toString(32).substr(2, 8)
 

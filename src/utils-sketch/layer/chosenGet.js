@@ -7,7 +7,7 @@
 import {evaluateExpressionStrRaw} from '../evaluateExpressionStr'
 import layersFindUsingRelativePath, {parseRelativePathStrPart} from './findUsingRelativePath'
 import {layerKindGet} from './misc'
-import {regexEscape} from '../../utils/misc'
+import {regexEscape} from '@leonardpauli/utils/lib/misc'
 import {dlog} from '../misc'
 import config from '../../config'
 

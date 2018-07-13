@@ -4,7 +4,7 @@
 // created by Leonard Pauli, jan 2017 + jun 2018
 // copyright © Leonard Pauli 2017-2018
 
-import nodesAtRelativePath, {parseRelativePathStrPart} from '../../utils/nodesAtRelativePath'
+import nodesAtRelativePath, {parseRelativePathStrPart} from '@leonardpauli/utils/lib/nodesAtRelativePath'
 
 const layersFindUsingRelativePath = (baseLayers, path, {
 	parentGet = l=> l.parentGroup && l.parentGroup(),
