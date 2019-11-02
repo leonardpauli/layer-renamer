@@ -22,7 +22,7 @@ Tested with Sketch v. 45.1
 *Protip: if you skip deselecting, if will look through the ones selected*
 *Also: `⌘-enter` is faster then clicking the second button*
 
-<img src="https://github.com/LeonardPauli/LayerRenamer/raw/master/demos/screenshot.png" width="100%">
+<img src="https://github.com/LeonardPauli/LayerRenamer/raw/master/docs/resources/screenshot.png" width="100%">
 
 ---
 
@@ -67,7 +67,7 @@ You can transform string cases using flags when replacing. Try writing the follo
 - `\T` TitleCase
 - `\W` word case
 
-<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/demos/transform%20cases.gif?raw=true" width="100%">
+<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/docs/demos/transform%20cases.gif?raw=true" width="100%">
 
 #### Example workflow: Rename using child layer name
 Use case: You've got a bunch of similar structured groups with layers inside of them. All the groups are just called "Group", however the first layer inside has the right name! You would like to rename the parent group to the layers name, and then maybe rename all the layers. No problem with LayerRenamer!
@@ -79,13 +79,13 @@ Use case: You've got a bunch of similar structured groups with layers inside of 
 6. `cmd-alt-R`, leave first empty, put `image` or something in second, hit `enter`
 7. Enjoy all the extra time you suddenly have left over :)
 
-<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/demos/rename%20using%20children.gif?raw=true" width="100%">
+<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/docs/demos/rename%20using%20children.gif?raw=true" width="100%">
 More advanced:
-<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/demos/rename%20group%20using%20inner%20layer%20name.gif?raw=true" width="100%">
+<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/docs/demos/rename%20group%20using%20inner%20layer%20name.gif?raw=true" width="100%">
 
 #### Beta: Copy outline
 Use case: The folder/layer structure you've got in the sidebar could be made to closely resemble the actual markup or css, etc. Together with the plugin, you'll also get an action called "Copy page outline". Just select a parent layer or deselect everything (to export the whole page), then run the action. This is very much just a hint of [what to come](https://github.com/LeonardPauli/LayerRenamer/issues/2), nevertheless handy as it is.
-<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/demos/copy%20outline%20pug%20beta.gif?raw=true" width="100%">
+<img src="https://github.com/LeonardPauli/LayerRenamer/blob/master/docs/demos/copy%20outline%20pug%20beta.gif?raw=true" width="100%">
 
 
 ### Installation
@@ -101,6 +101,8 @@ Leaving the expression field empty defaults to `!path && !artboard`
 
 ### Contribute
 Feel like adding / fixing something? Create an issue and/or send a pull request! :D
+
+See [skpm readme](https://github.com/skpm/skpm/blob/master/README.md) and [lpdocs/design/sketch/plugins/create](https://github.com/leonardpauli/docs/tree/master/design/sketch/plugins/create.rim) on how to get started.
  
 ### Say thanks
 If you enjoy this plugin, please consider [buying me some oatgurt](https://www.paypal.me/leonardpauli/5USD). You can also drop me a line or [follow  me on Twitter](http://twitter.com/leonardpauli). Got an idea for a new plugin? Send me a tweet!

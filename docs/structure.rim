@@ -1,0 +1,64 @@
+# structure
+' LeonardPauli/layer-renamer, sketch plugin
+	Created by Leonard Pauli, 6 jun 2018
+
+interface idea is Window{resizable{remember + limit to screen bounds}}
+	background: white or dark, check midnight theme?
+	- View{vertical}
+		- findAndReplaceSection: View{horizontal}
+			data:
+				useSelection: true
+				useCaseSensitive: false
+				usePath: false
+				useRegex: false
+				matchStringRaw: ""
+				matchString: matchStringRaw or ("(.*)" if useRegex else "")
+				useRename: false
+				renameString: ""
+			- search: View{vertical}
+				- inputStrip: View{horizontal}
+					- useItBtn: Button{toggleble; value: ^useSelection}: "S"
+						tooltip: "Search in existing selection is \("enabled" if useSelection else "disabled"), click to toggle"
+					- Button{toggleble; value: ^useCaseSensitive}: "Aa"
+						tooltip: "\("Disable" if useCaseSensitive else "Use") case sensitive match"
+					- Button{toggleble; value: ^usePath}: ":>"
+						tooltip: "\("Disable" if usePath else "Use") path commands; eg. select layers relative to the match (⌥+click to learn more)"
+					- Button{toggleble; value: ^useRegex}: ".*"
+						tooltip: "\("Disable" if useRegex else "Use") regex commands; (⌥+click to learn more)"
+					- Text{editable; value: ^matchStringRaw}
+						dropdown-with-previous-values+x-to-clear
+						placeholder: "What to search for? \(matchString)"
+					- useRenameBtn: Button{toggleble; value: ^useRename}: "R"
+						x: parent.width + spacing
+						tooltip: "Rename matched layers is \("enabled" if useRename else "disabled"), click to toggle"
+				- inputTips: View{horizontal}
+					// boubles (flag: value) eg. (:(ab): filter artboard)
+				- resultPreview
+					-
+						- Text "Copy as"
+						- Button "tsv"
+						- Button "outline/rim"
+					- ...
+			- rename: View{vertical}
+				(width, marginLeft): 0 if not useRename
+				- inputStrip: View{horizontal}
+					- useRenameBtnSpacer: View{width: useRenameBtn.width + spacing}
+					- Text{editable; value: ^renameString}
+						dropdown-with-previous-values+x-to-clear
+						placeholder: "Rename pattern here :)"
+				- inputTips: View{horizontal}
+					// boubles (flag: value) eg. ($1: match 1 value example) (%N: 5)
+				- resultPreview
+					-
+						- Text "Update with"
+						- Button "tsv"
+						- Button "outline/rim"
+		- optionsSection: View{horizontal}
+			- or useRename:
+				- true: Button{trigger-with-enter} "Rename"
+				- else: Button{trigger-with-enter} "Change Selection"
+					dropdown-with-alternative-options: boolean options // eg. add to selection (union), intersection, etc
+		- View{horizontal}
+			tooltip: ""
+			Text{opacity: 0.7 * (0.5 if tooltip is Empty else 1)}: tooltip or:
+				"*LayerRenamer* © *Leonard Pauli* 2017-2018, *learn more...*"

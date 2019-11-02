@@ -1,0 +1,6 @@
+{
+	"extends": ["sketch", "@leonardpauli/eslint-config"],
+	"globals": {
+		"coscript": true
+	}
+}
